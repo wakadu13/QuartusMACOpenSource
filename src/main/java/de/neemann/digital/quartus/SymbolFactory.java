@@ -6,6 +6,8 @@
 package de.neemann.digital.quartus;
 
 import de.neemann.digital.draw.graphics.Orientation;
+import de.neemann.digital.draw.graphics.Vector;
+import de.neemann.digital.draw.shapes.custom.CustomShapeDescription;
 
 import java.util.List;
 
@@ -14,7 +16,7 @@ import java.util.List;
  * input and output pins and the default rectangular block symbol.
  * All coordinates are Quartus coordinates.
  */
-final class SymbolFactory {
+public final class SymbolFactory {
     /**
      * the distance of two ports
      */
@@ -42,6 +44,34 @@ final class SymbolFactory {
         String getKey() {
             return key;
         }
+    }
+
+    /**
+     * Creates the shape of an input pin as drawn by Quartus.
+     * The connection point is at (0,0).
+     *
+     * @param name the name of the pin
+     * @param key  the key of the Digital pin including the prefix
+     * @return the shape
+     */
+    public static CustomShapeDescription inputPinShape(String name, String key) {
+        ShapeBuilder sb = new ShapeBuilder(new Vector(0, 0));
+        inputPin(sb, 0, 0, name, key);
+        return sb.build();
+    }
+
+    /**
+     * Creates the shape of an output pin as drawn by Quartus.
+     * The connection point is at (0,0).
+     *
+     * @param name the name of the pin
+     * @param key  the key of the Digital pin including the prefix
+     * @return the shape
+     */
+    public static CustomShapeDescription outputPinShape(String name, String key) {
+        ShapeBuilder sb = new ShapeBuilder(new Vector(0, 0));
+        outputPin(sb, 0, 0, name, key);
+        return sb.build();
     }
 
     /**

@@ -54,6 +54,7 @@ import de.neemann.digital.hdl.printer.CodePrinter;
 import de.neemann.digital.hdl.verilog2.VerilogGenerator;
 import de.neemann.digital.hdl.vhdl2.VHDLGenerator;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.QuartusImporter;
 import de.neemann.digital.testing.TestingDataException;
 import de.neemann.digital.toolchain.Configuration;
 import de.neemann.digital.undo.ChangedListener;
@@ -178,7 +179,8 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 SwingUtilities.invokeLater(new ErrorMessage(Lang.get("err_loadingLibrary")).addCause(e).setComponent(this));
         }
 
-        shapeFactory = new ShapeFactory(library, Settings.getInstance().get(Keys.SETTINGS_IEEE_SHAPES));
+        final boolean quartusShapes = Settings.getInstance().get(Keys.SETTINGS_QUARTUS_SHAPES);
+        shapeFactory = new ShapeFactory(library, Settings.getInstance().get(Keys.SETTINGS_IEEE_SHAPES) || quartusShapes, quartusShapes);
 
         fileHistory = new FileHistory(this);
 
@@ -568,6 +570,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 if (ClosingWindowListener.checkForSave(Main.this, Main.this)) {
                     JFileChooser fc = getJFileChooser(baseFilename);
                     fc.addChoosableFileFilter(new FileNameExtensionFilter("FSM", "fsm"));
+                    fc.addChoosableFileFilter(QuartusImporter.createFileFilter(Lang.get("msg_quartusFiles")));
                     fc.addChoosableFileFilter(new FileNameExtensionFilter(Lang.get("msg_truthTable"), "tru"));
                     if (fc.showOpenDialog(Main.this) == JFileChooser.APPROVE_OPTION) {
                         File file = fc.getSelectedFile();
@@ -585,6 +588,18 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 }
             }
         }.setAcceleratorCTRLplus('O').setEnabledChain(allowAll);
+
+        ToolTipAction openQuartus = new ToolTipAction(Lang.get("menu_importQuartus"), ICON_OPEN) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (ClosingWindowListener.checkForSave(Main.this, Main.this)) {
+                    JFileChooser fc = getJFileChooser(baseFilename);
+                    fc.setFileFilter(QuartusImporter.createFileFilter(Lang.get("msg_quartusFiles")));
+                    if (fc.showOpenDialog(Main.this) == JFileChooser.APPROVE_OPTION)
+                        loadFile(fc.getSelectedFile(), true, true);
+                }
+            }
+        }.setToolTip(Lang.get("menu_importQuartus_tt")).setEnabledChain(allowAll);
 
         ToolTipAction openWin = new ToolTipAction(Lang.get("menu_openWin"), ICON_OPEN_WIN) {
             @Override
@@ -677,6 +692,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         file.add(newFile.createJMenuItem());
         file.add(newSubFile.createJMenuItem());
         file.add(open.createJMenuItem());
+        file.add(openQuartus.createJMenuItem());
         file.add(openRecent);
         file.add(openWin.createJMenuItem());
         file.add(openRecentNewWindow);
@@ -1677,9 +1693,28 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         }
     }
 
-    private void loadFile(File filename, boolean setLibraryRoot, boolean toPref) {
-        LOGGER.debug("loadFile: " + filename);
+    private void loadFile(File fileToLoad, boolean setLibraryRoot, boolean toPref) {
+        LOGGER.debug("loadFile: " + fileToLoad);
+        File filename = fileToLoad;
         try {
+            if (QuartusImporter.isQuartusFile(filename)) {
+                // Quartus files are converted to Digital circuits which are then opened
+                QuartusImporter imp = QuartusImporter.importFile(filename);
+                filename = imp.getTopFile();
+                if (!imp.getWarnings().isEmpty()) {
+                    StringBuilder sb = new StringBuilder(Lang.get("msg_quartusImportWarnings_N", filename.getParent()));
+                    int n = 0;
+                    for (String w : imp.getWarnings()) {
+                        if (n++ > 30) {
+                            sb.append("\n...");
+                            break;
+                        }
+                        sb.append("\n- ").append(w);
+                    }
+                    SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, sb.toString(),
+                            Lang.get("menu_importQuartus"), JOptionPane.INFORMATION_MESSAGE));
+                }
+            }
             if (setLibraryRoot) {
                 LOGGER.debug("set library root: " + filename);
                 library.setRootFilePath(filename.getParentFile());

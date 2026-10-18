@@ -19,6 +19,7 @@ import de.neemann.digital.draw.elements.PinException;
 import de.neemann.digital.draw.graphics.GraphicSVG;
 import de.neemann.digital.draw.library.ElementLibrary;
 import junit.framework.TestCase;
+import de.neemann.digital.quartus.lib.QuartusNode;
 
 /**
  */
@@ -76,7 +77,8 @@ public class TestElemConsistence extends TestCase {
                 || e instanceof Relay
                 || e instanceof RelayDT
                 || e instanceof Switch
-                || e instanceof SwitchDT);
+                || e instanceof SwitchDT
+                || e instanceof QuartusNode);
     }
 
 }

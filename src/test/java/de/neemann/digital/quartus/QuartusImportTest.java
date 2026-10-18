@@ -103,4 +103,30 @@ public class QuartusImportTest extends TestCase {
         assertEquals(7, output(m, "c").getBits());
         m.close();
     }
+
+    public void testMegaWizardCounter() throws Exception {
+        File qpf = new File(Resources.getRoot(), "quartus/megawizard/top.qpf");
+        QuartusImporter imp = QuartusImporter.importFile(qpf, tempDir());
+        assertEquals(imp.getWarnings().toString(), 0, imp.getWarnings().size());
+        assertEquals("N2", imp.getProject().getPinLocation("clk"));
+
+        Model m = createModel(imp.getTopFile());
+        ObservableValue en = input(m, "en");
+        ObservableValue clk = m.getClocks().get(0).getClockOutput();
+        ObservableValue count = output(m, "count");
+        ObservableValue carry = output(m, "carry");
+        ObservableValue hi = output(m, "hi");
+        assertEquals(4, count.getBits());
+
+        en.setValue(1);
+        m.doStep();
+        for (int i = 1; i <= 25; i++) {
+            clock(m, clk);
+            long v = i % 10;
+            assertEquals(v, count.getValue());
+            assertEquals(v == 9 ? 1 : 0, carry.getValue());
+            assertEquals(v == 9 ? 1 : 0, hi.getValue());
+        }
+        m.close();
+    }
 }

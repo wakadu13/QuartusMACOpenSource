@@ -41,6 +41,7 @@ public final class Settings extends SettingsBase {
     private static List<Key> createKeyList() {
         List<Key> intList = new ArrayList<>();
         intList.add(Keys.SETTINGS_IEEE_SHAPES);
+        intList.add(Keys.SETTINGS_QUARTUS_SHAPES);
         intList.add(Keys.SETTINGS_LANGUAGE);
         intList.add(Keys.SETTINGS_EXPRESSION_FORMAT);
         intList.add(ColorScheme.COLOR_SCHEME);

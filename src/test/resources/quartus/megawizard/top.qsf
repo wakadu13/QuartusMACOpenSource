@@ -1,0 +1,5 @@
+set_global_assignment -name FAMILY "Cyclone II"
+set_global_assignment -name TOP_LEVEL_ENTITY top
+set_global_assignment -name BDF_FILE top.bdf
+set_global_assignment -name QIP_FILE cnt4.qip
+set_location_assignment PIN_N2 -to clk

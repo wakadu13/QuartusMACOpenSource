@@ -31,6 +31,8 @@ import de.neemann.digital.draw.shapes.ieee.IEEEXOrShape;
 import de.neemann.digital.gui.components.data.DummyElement;
 import de.neemann.digital.gui.components.data.ScopeTrigger;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.ShapeBuilder;
+import de.neemann.digital.quartus.SymbolFactory;
 import de.neemann.digital.testing.TestCaseElement;
 
 import java.util.HashMap;
@@ -62,6 +64,17 @@ public final class ShapeFactory {
      * @param ieee    true if IEEE shapes required
      */
     public ShapeFactory(ElementLibrary library, boolean ieee) {
+        this(library, ieee, false);
+    }
+
+    /**
+     * Creates a new instance
+     *
+     * @param library the library to get information about the parts to visualize
+     * @param ieee    true if IEEE shapes required
+     * @param quartus true if inputs and outputs should look like the Quartus pins
+     */
+    public ShapeFactory(ElementLibrary library, boolean ieee, boolean quartus) {
         this.library = library;
         library.setShapeFactory(this);
         if (ieee) {
@@ -175,6 +188,12 @@ public final class ShapeFactory {
         // disables string formatting for external components, see #272
         map.put(External.DESCRIPTION.getName(), new ExternCreator(External.DESCRIPTION));
         map.put(ExternalFile.DESCRIPTION.getName(), new ExternCreator(ExternalFile.DESCRIPTION));
+
+        if (quartus) {
+            map.put(In.DESCRIPTION.getName(), new QuartusPinCreator(In.DESCRIPTION.getName(), true, "out"));
+            map.put(Clock.DESCRIPTION.getName(), new QuartusPinCreator(Clock.DESCRIPTION.getName(), true, "C"));
+            map.put(Out.DESCRIPTION.getName(), new QuartusPinCreator(Out.DESCRIPTION.getName(), false, "in"));
+        }
 
         final JarComponentManager jcm = library.getJarComponentManager();
         if (jcm != null)
@@ -330,6 +349,43 @@ public final class ShapeFactory {
                     return s.replace("_", "\\_");
                 }
             };
+        }
+    }
+
+    /*
+     * Creates inputs and outputs which look like the Quartus pins.
+     * The interaction is delegated to the original shape.
+     */
+    private final class QuartusPinCreator implements Creator {
+        private final String name;
+        private final boolean input;
+        private final String pin;
+        private final Creator original;
+
+        private QuartusPinCreator(String name, boolean input, String pin) {
+            this.name = name;
+            this.input = input;
+            this.pin = pin;
+            this.original = map.get(name);
+        }
+
+        @Override
+        public Shape create(ElementAttributes attributes, PinDescriptions inputs, PinDescriptions outputs) throws NodeException, PinException {
+            String label = attributes.getLabel();
+            String pinNumber = attributes.get(Keys.PINNUMBER);
+            if (!pinNumber.isEmpty())
+                label = label + " (" + pinNumber + ")";
+            CustomShapeDescription d;
+            if (input)
+                d = SymbolFactory.inputPinShape(label, ShapeBuilder.OUT + pin);
+            else
+                d = SymbolFactory.outputPinShape(label, ShapeBuilder.IN + pin);
+            return new QuartusShape(d, original.create(attributes, inputs, outputs), inputs, outputs);
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }

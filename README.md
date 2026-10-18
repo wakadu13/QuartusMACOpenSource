@@ -1,3 +1,24 @@
+# QuartusMACOpenSource #
+
+**QuartusMACOpenSource** est une version de [Digital](https://github.com/hneemann/Digital) (simulateur de
+circuits logiques de Helmut Neemann, licence GPL v3) capable d'ouvrir, de dessiner et de simuler les fichiers
+d'Intel/Altera **Quartus** — sans Quartus, et donc aussi sur macOS et Linux.
+
+➡️ Documentation complète en français : [README_QUARTUS.md](README_QUARTUS.md)
+
+En bref :
+
+- **Fichier → Ouvrir un projet ou un fichier Quartus** ouvre un `.qpf`, `.qsf`, `.bdf`, `.bsf`, `.vhd`, `.v` ou `.tdf`.
+  Le schéma est converti en circuits Digital (un fichier `.dig` par bloc, dans le dossier `digital/`
+  à côté du projet) puis ouvert, prêt à être modifié et simulé.
+- Les symboles, broches, fils, bus et étiquettes sont **dessinés exactement comme dans Quartus**
+  (le dessin est repris du fichier `.bdf`).
+- Les primitives Quartus (portes, `DFF`, `DFFE`, `TFF`, `JKFF`, `SRFF`, `LATCH`, `VCC`, `GND`, ...),
+  plusieurs mégafonctions `LPM_*` et des macrofonctions `74xx` sont simulées nativement.
+- En ligne de commande : `java -cp Digital.jar CLI quartus -file MonProjet.qpf`
+
+---
+
 [![Download](distribution/Download.svg)](https://github.com/hneemann/Digital/releases/latest/download/Digital.zip)
 
 # Digital #

@@ -22,6 +22,7 @@ import de.neemann.digital.quartus.lib.Params;
 import de.neemann.digital.quartus.lib.QuartusPart;
 import de.neemann.digital.quartus.lib.QuartusParts;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -49,6 +50,8 @@ public final class QuartusImporter {
     private static final Pattern AHDL_SUBDESIGN = Pattern.compile(
             "(?is)\\bSUBDESIGN\\s+(\\w+)\\s*\\((.*?)\\)\\s*(VARIABLE|BEGIN)");
 
+    private static final String SOURCE_NOT_FOUND = "source not found";
+
     private final QuartusProject project;
     private final File outDir;
     private final ArrayList<String> warnings = new ArrayList<>();
@@ -67,6 +70,32 @@ public final class QuartusImporter {
     public QuartusImporter(QuartusProject project, File outDir) {
         this.project = project;
         this.outDir = outDir;
+    }
+
+    private static final String[] QUARTUS_EXTENSIONS = {"qpf", "qsf", "bdf", "bsf", "vhd", "vhdl", "v", "sv", "tdf"};
+
+    /**
+     * Returns true if the given file is a Quartus file which can be imported
+     *
+     * @param f the file
+     * @return true if the file can be imported
+     */
+    public static boolean isQuartusFile(File f) {
+        String n = f.getName().toLowerCase(Locale.ROOT);
+        for (String e : QUARTUS_EXTENSIONS)
+            if (n.endsWith("." + e))
+                return true;
+        return false;
+    }
+
+    /**
+     * Creates a file filter for the Quartus files
+     *
+     * @param description the description
+     * @return the filter
+     */
+    public static FileNameExtensionFilter createFileFilter(String description) {
+        return new FileNameExtensionFilter(description, QUARTUS_EXTENSIONS);
     }
 
     /**
@@ -131,7 +160,7 @@ public final class QuartusImporter {
             getIndex().put(key(top), topFile);
         }
         DesignInterface ifc = getInterface(top, null, true);
-        if (ifc.getKind() == DesignInterface.Kind.BLACKBOX)
+        if (ifc.getKind() == DesignInterface.Kind.BLACKBOX && ifc.getInfo().equals(SOURCE_NOT_FOUND))
             throw new IOException("the top level design '" + top + "' was not found");
     }
 
@@ -313,7 +342,7 @@ public final class QuartusImporter {
         }
         if (src == null) {
             warn("source of '" + name + "' not found, it is imported as an empty block");
-            return blackBox(name, symbol, "source not found");
+            return blackBox(name, symbol, SOURCE_NOT_FOUND);
         }
         String n = src.getName().toLowerCase(Locale.ROOT);
         if (n.endsWith(".bdf"))

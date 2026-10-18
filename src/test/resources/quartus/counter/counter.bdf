@@ -75,8 +75,8 @@
 	(drawing
 		(arc (pt 7 36)(pt 7 12)(rect -15 7 13 41)(line_width 1))
 		(arc (pt 14 36)(pt 14 12)(rect -8 7 20 41)(line_width 1))
-		(arc (pt 14 12)(pt 46 24)(rect -18 12 46 76)(line_width 1))
-		(arc (pt 46 24)(pt 14 36)(rect -18 -28 46 36)(line_width 1))
+		(arc (pt 46 24)(pt 14 12)(rect -18 12 46 76)(line_width 1))
+		(arc (pt 14 36)(pt 46 24)(rect -18 -28 46 36)(line_width 1))
 	)
 )
 (symbol
@@ -189,8 +189,8 @@
 	(drawing
 		(arc (pt 7 36)(pt 7 12)(rect -15 7 13 41)(line_width 1))
 		(arc (pt 14 36)(pt 14 12)(rect -8 7 20 41)(line_width 1))
-		(arc (pt 14 12)(pt 46 24)(rect -18 12 46 76)(line_width 1))
-		(arc (pt 46 24)(pt 14 36)(rect -18 -28 46 36)(line_width 1))
+		(arc (pt 46 24)(pt 14 12)(rect -18 12 46 76)(line_width 1))
+		(arc (pt 14 36)(pt 46 24)(rect -18 -28 46 36)(line_width 1))
 	)
 )
 (symbol

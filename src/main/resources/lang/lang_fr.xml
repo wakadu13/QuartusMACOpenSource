@@ -2832,4 +2832,8 @@ Avertissements :</string>
     <string name="elem_Quartus_7493_tt">Quartus 7493: 4-bit binary ripple counter</string>
     <string name="elem_Quartus_7490">7490</string>
     <string name="elem_Quartus_7490_tt">Quartus 7490: Decade ripple counter</string>
+    <string name="cli_help_quartus">Convertit un projet Quartus (qpf, qsf), un schéma (bdf) ou un fichier HDL en circuits Digital.</string>
+    <string name="cli_help_quartus_file">Le fichier Quartus à convertir.</string>
+    <string name="cli_help_quartus_out">Le dossier où écrire les circuits. Par défaut le dossier "digital" à côté du fichier Quartus.</string>
+    <string name="cli_errorImportingQuartus">Erreur lors de l'import du design Quartus.</string>
 </resources>

@@ -19,6 +19,7 @@ public class Main extends Muxer {
         super("java -cp Digital.jar CLI");
         addCommand(new CommandLineTester.TestCommand());
         addCommand(new SVGExport());
+        addCommand(new QuartusImport());
         addCommand(new StatsExport());
         addCommand(new Runner());
     }

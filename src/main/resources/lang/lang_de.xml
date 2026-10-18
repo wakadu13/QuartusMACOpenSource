@@ -2733,4 +2733,8 @@ Warnungen:</string>
     <string name="elem_Quartus_7493_tt">Quartus 7493: 4-bit binary ripple counter</string>
     <string name="elem_Quartus_7490">7490</string>
     <string name="elem_Quartus_7490_tt">Quartus 7490: Decade ripple counter</string>
+    <string name="cli_help_quartus">Konvertiert ein Quartus Projekt (qpf, qsf), eine Block-Design-Datei (bdf) oder eine HDL-Datei in Digital Schaltungen.</string>
+    <string name="cli_help_quartus_file">Die zu konvertierende Quartus Datei.</string>
+    <string name="cli_help_quartus_out">Der Ordner, in den die Schaltungen geschrieben werden. Standard ist der Ordner "digital" neben der Quartus Datei.</string>
+    <string name="cli_errorImportingQuartus">Fehler beim Import des Quartus Designs.</string>
 </resources>
