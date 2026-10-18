@@ -75,6 +75,13 @@ public final class QuartusPart {
         }
 
         /**
+         * @return true if this is a clock input
+         */
+        public boolean isClock() {
+            return clock;
+        }
+
+        /**
          * @return the default value used if the pin is not connected
          */
         public long getDefault() {

@@ -238,7 +238,7 @@ public class GraphicSVG extends Graphic {
      * @return the COLOR
      */
     private String getColor(Style style) {
-        return "#" + Integer.toHexString(colorStyle.getColor(style).getRGB()).substring(2);
+        return String.format("#%06x", colorStyle.getColor(style).getRGB() & 0xFFFFFF);
     }
 
     private String getOpacity(Style style) {

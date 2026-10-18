@@ -13,6 +13,7 @@ import de.neemann.digital.draw.elements.Pin;
 import de.neemann.digital.draw.elements.PinException;
 import de.neemann.digital.draw.elements.Pins;
 import de.neemann.digital.draw.graphics.Graphic;
+import de.neemann.digital.draw.graphics.GraphicMinMax;
 import de.neemann.digital.draw.graphics.Orientation;
 import de.neemann.digital.draw.graphics.Style;
 import de.neemann.digital.draw.graphics.Vector;
@@ -105,7 +106,7 @@ public class QuartusShape implements Shape {
             d.drawTo(graphic, highLight);
             empty = false;
         }
-        if (empty) {
+        if (empty && graphic instanceof GraphicMinMax) {
             // invisible helper element: draw an invisible point to give the element a bounding box
             Vector p = new Vector(0, 0);
             if (pins.size() > 0)

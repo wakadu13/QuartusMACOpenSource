@@ -36,6 +36,8 @@ import de.neemann.digital.gui.components.graphics.VGA;
 import de.neemann.digital.gui.components.terminal.Keyboard;
 import de.neemann.digital.gui.components.terminal.Terminal;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.lib.QuartusPart;
+import de.neemann.digital.quartus.lib.QuartusParts;
 import de.neemann.digital.testing.TestCaseElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,6 +246,20 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(Break.DESCRIPTION)
                         .add(Stop.DESCRIPTION)
                         .add(AsyncSeq.DESCRIPTION));
+
+        LibraryNode quartusPrimitives = new LibraryNode(Lang.get("lib_quartusPrimitives"));
+        for (QuartusPart p : QuartusParts.getPrimitives())
+            quartusPrimitives.add(p.getTypeDescription());
+        LibraryNode quartusLPM = new LibraryNode(Lang.get("lib_quartusMegafunctions"));
+        for (QuartusPart p : QuartusParts.getMegafunctions())
+            quartusLPM.add(p.getTypeDescription());
+        LibraryNode quartus74 = new LibraryNode(Lang.get("lib_quartusMacrofunctions"));
+        for (QuartusPart p : QuartusParts.getMacrofunctions())
+            quartus74.add(p.getTypeDescription());
+        root.add(new LibraryNode(Lang.get("lib_quartus"))
+                .add(quartusPrimitives)
+                .add(quartusLPM)
+                .add(quartus74));
 
         addExternalJarComponents(jarFile);
 

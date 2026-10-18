@@ -8,6 +8,7 @@ package de.neemann.digital.draw.elements;
 import de.neemann.digital.draw.graphics.Vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 
 /**
@@ -16,6 +17,7 @@ import java.util.HashSet;
  */
 public class WireConsistencyChecker {
     private ArrayList<Wire> wires;
+    private final Collection<Vector> protectedPoints;
 
     /**
      * Creates a new instance
@@ -23,7 +25,18 @@ public class WireConsistencyChecker {
      * @param wires the wires to check
      */
     public WireConsistencyChecker(ArrayList<Wire> wires) {
+        this(wires, null);
+    }
+
+    /**
+     * Creates a new instance
+     *
+     * @param wires           the wires to check
+     * @param protectedPoints points where wires are not merged, e.g. pin positions. Maybe null.
+     */
+    public WireConsistencyChecker(ArrayList<Wire> wires, Collection<Vector> protectedPoints) {
         this.wires = wires;
+        this.protectedPoints = protectedPoints;
     }
 
     /**
@@ -72,6 +85,10 @@ public class WireConsistencyChecker {
         hori.protectPoints(vertPoints);
         vert.protectPoints(diagPoints);
         vert.protectPoints(horiPoints);
+        if (protectedPoints != null) {
+            hori.protectPoints(protectedPoints);
+            vert.protectPoints(protectedPoints);
+        }
 
         hori.addTo(newWires);
         vert.addTo(newWires);

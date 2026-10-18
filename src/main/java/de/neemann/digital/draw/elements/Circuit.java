@@ -356,7 +356,7 @@ public class Circuit implements Copyable<Circuit> {
             return null;
 
         wires.add(newWire);
-        WireConsistencyChecker checker = new WireConsistencyChecker(wires);
+        WireConsistencyChecker checker = new WireConsistencyChecker(wires, getPinPositions());
         wires = checker.check();
 
         dotsPresent = false;
@@ -371,7 +371,7 @@ public class Circuit implements Copyable<Circuit> {
      */
     public Circuit add(ArrayList<Wire> newWires) {
         wires.addAll(newWires);
-        WireConsistencyChecker checker = new WireConsistencyChecker(wires);
+        WireConsistencyChecker checker = new WireConsistencyChecker(wires, getPinPositions());
         wires = checker.check();
 
         dotsPresent = false;
@@ -382,7 +382,7 @@ public class Circuit implements Copyable<Circuit> {
      * Called if elements are moved
      */
     public void elementsMoved() {
-        WireConsistencyChecker checker = new WireConsistencyChecker(wires);
+        WireConsistencyChecker checker = new WireConsistencyChecker(wires, getPinPositions());
         wires = checker.check();
 
         dotsPresent = false;
@@ -627,7 +627,7 @@ public class Circuit implements Copyable<Circuit> {
         }
 
         if (wireDeleted) {
-            WireConsistencyChecker checker = new WireConsistencyChecker(wires);
+            WireConsistencyChecker checker = new WireConsistencyChecker(wires, getPinPositions());
             wires = checker.check();
         }
 
@@ -650,7 +650,7 @@ public class Circuit implements Copyable<Circuit> {
      */
     public void delete(Wire wireToDelete) {
         if (wires.remove(wireToDelete)) {
-            WireConsistencyChecker checker = new WireConsistencyChecker(wires);
+            WireConsistencyChecker checker = new WireConsistencyChecker(wires, getPinPositions());
             wires = checker.check();
             dotsPresent = false;
         }
@@ -708,6 +708,19 @@ public class Circuit implements Copyable<Circuit> {
         if (el == null) return false;
 
         return el.isPinPos(pos);
+    }
+
+    private HashSet<Vector> getPinPositions() {
+        HashSet<Vector> pos = new HashSet<>();
+        for (VisualElement ve : visualElements) {
+            try {
+                for (Pin p : ve.getPins())
+                    pos.add(p.getPos());
+            } catch (RuntimeException e) {
+                // no shape available, pins are ignored
+            }
+        }
+        return pos;
     }
 
     /**

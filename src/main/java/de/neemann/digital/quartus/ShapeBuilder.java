@@ -5,9 +5,13 @@
  */
 package de.neemann.digital.quartus;
 
+import de.neemann.digital.core.element.ElementAttributes;
+import de.neemann.digital.core.element.Keys;
+import de.neemann.digital.draw.elements.VisualElement;
 import de.neemann.digital.draw.graphics.Orientation;
 import de.neemann.digital.draw.graphics.Polygon;
 import de.neemann.digital.draw.graphics.Vector;
+import de.neemann.digital.draw.shapes.GenericShape;
 import de.neemann.digital.draw.shapes.custom.CustomShapeDescription;
 
 import java.awt.Color;
@@ -59,6 +63,36 @@ public final class ShapeBuilder {
      */
     public static Vector scale(BdfFile.Point p) {
         return new Vector(scale(p.x), scale(p.y));
+    }
+
+    /**
+     * Creates a visual element at the given position.
+     * If the position is not on the grid, the snap to grid is disabled.
+     *
+     * @param name the name of the element
+     * @param pos  the position
+     * @return the element
+     */
+    public static VisualElement createElement(String name, Vector pos) {
+        return createElement(name, pos, null);
+    }
+
+    /**
+     * Creates a visual element at the given position.
+     * If the position is not on the grid, the snap to grid is disabled.
+     *
+     * @param name the name of the element
+     * @param pos  the position
+     * @param attr the attributes of the element, maybe null
+     * @return the element
+     */
+    public static VisualElement createElement(String name, Vector pos, ElementAttributes attr) {
+        VisualElement ve = new VisualElement(name);
+        if (attr != null)
+            ve.getElementAttributes().getValuesFrom(attr);
+        if (pos.x % GenericShape.SIZE != 0 || pos.y % GenericShape.SIZE != 0)
+            ve.setAttribute(Keys.SNAP_TO_GRID, false);
+        return ve.setPos(pos);
     }
 
     /**
@@ -161,13 +195,23 @@ public final class ShapeBuilder {
         int size = fontSize(t, h);
         if (t.vertical) {
             Vector p = v((r.x1 + r.x2) / 2.0 + ox, r.y2 + oy);
-            builder.addText(p, p.add(0, -1), t.text, Orientation.LEFTCENTER, size, COLOR);
+            builder.addText(p, p.add(0, -1), escape(t.text), Orientation.LEFTCENTER, size, COLOR);
         } else {
             Vector p = v(r.x1 + ox, (r.y1 + r.y2) / 2.0 + oy);
-            builder.addText(p, p.add(1, 0), t.text, Orientation.LEFTCENTER, size, COLOR);
+            builder.addText(p, p.add(1, 0), escape(t.text), Orientation.LEFTCENTER, size, COLOR);
         }
         empty = false;
         return this;
+    }
+
+    /**
+     * Escapes the characters which are interpreted by the Digital text formatter
+     *
+     * @param text the text
+     * @return the escaped text
+     */
+    public static String escape(String text) {
+        return text.replace("\\", "\\\\").replace("_", "\\_").replace("^", "\\^");
     }
 
     private static int fontSize(BdfFile.Text t, int rectHeight) {
@@ -180,6 +224,54 @@ public final class ShapeBuilder {
             return Math.max(10, Math.min(fromPt, fromRect));
         }
         return fromPt;
+    }
+
+    /**
+     * Adds a line given in absolute Quartus coordinates
+     *
+     * @param x1  x1
+     * @param y1  y1
+     * @param x2  x2
+     * @param y2  y2
+     * @param bus true if a bus line
+     * @return this for chained calls
+     */
+    public ShapeBuilder line(int x1, int y1, int x2, int y2, boolean bus) {
+        builder.addLine(v(x1, y1), v(x2, y2), bus ? BUS : THIN, COLOR);
+        empty = false;
+        return this;
+    }
+
+    /**
+     * Adds a closed polygon given in absolute Quartus coordinates
+     *
+     * @param xy the coordinates x1, y1, x2, y2, ...
+     * @return this for chained calls
+     */
+    public ShapeBuilder polygon(int... xy) {
+        Polygon p = new Polygon(true);
+        for (int i = 0; i + 1 < xy.length; i += 2)
+            p.add(v(xy[i], xy[i + 1]));
+        builder.addPolygon(p, THIN, COLOR, false);
+        empty = false;
+        return this;
+    }
+
+    /**
+     * Adds a text given in absolute Quartus coordinates
+     *
+     * @param text        the text
+     * @param x           x
+     * @param y           y
+     * @param pt          the font size in points
+     * @param orientation the orientation
+     * @return this for chained calls
+     */
+    public ShapeBuilder text(String text, int x, int y, int pt, Orientation orientation) {
+        Vector p = v(x, y);
+        builder.addText(p, p.add(1, 0), escape(text), orientation, (int) Math.round(pt * 3.2), COLOR);
+        empty = false;
+        return this;
     }
 
     /**
