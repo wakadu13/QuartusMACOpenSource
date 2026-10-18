@@ -13,9 +13,14 @@ En bref :
   à côté du projet) puis ouvert, prêt à être modifié et simulé.
 - Les symboles, broches, fils, bus et étiquettes sont **dessinés exactement comme dans Quartus**
   (le dessin est repris du fichier `.bdf`).
-- Les primitives Quartus (portes, `DFF`, `DFFE`, `TFF`, `JKFF`, `SRFF`, `LATCH`, `VCC`, `GND`, ...),
-  plusieurs mégafonctions `LPM_*` et des macrofonctions `74xx` sont simulées nativement.
-- En ligne de commande : `java -cp Digital.jar CLI quartus -file MonProjet.qpf`
+- **175 composants Quartus** sont simulés nativement : primitives (portes, `DFF`, `DFFE`, `TFF`, `JKFF`,
+  `SRFF`, `LATCH`, tampons…), mégafonctions (`LPM_COUNTER`, `LPM_ADD_SUB`, `LPM_MUX`, `LPM_ROM`,
+  `LPM_RAM_DQ`, `ALTSYNCRAM`, `LPM_FIFO`…) et 73 macrofonctions `74xx`, rangés comme dans Quartus.
+- Les mémoires sont initialisées par les fichiers `.mif`/`.hex`, les chronogrammes `.vwf` deviennent des cas de test.
+- **Fichier → Exporter → Exporter vers Quartus (bdf)** écrit un circuit Digital en schéma Quartus.
+- En ligne de commande : `java -cp Digital.jar CLI quartus -file MonProjet.qpf` (import) et
+  `java -cp Digital.jar CLI quartusExport -dig MonCircuit.dig` (export).
+- La couche Quartus est écrite en Kotlin ; il faut Java 17 ou plus récent.
 
 ---
 

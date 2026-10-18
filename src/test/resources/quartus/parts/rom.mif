@@ -1,0 +1,15 @@
+-- the rom content: 3*address+1
+WIDTH=8;
+DEPTH=8;
+ADDRESS_RADIX=UNS;
+DATA_RADIX=HEX;
+CONTENT BEGIN
+	0 : 01;
+	1 : 04;
+	2 : 07;
+	3 : 0A;
+	4 : 0D;
+	5 : 10;
+	6 : 13;
+	7 : 16;
+END;
