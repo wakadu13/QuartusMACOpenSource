@@ -33,6 +33,8 @@ import de.neemann.digital.gui.components.data.ScopeTrigger;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.quartus.ShapeBuilder;
 import de.neemann.digital.quartus.SymbolFactory;
+import de.neemann.digital.quartus.lib.QuartusPart;
+import de.neemann.digital.quartus.lib.QuartusParts;
 import de.neemann.digital.testing.TestCaseElement;
 
 import java.util.HashMap;
@@ -194,6 +196,9 @@ public final class ShapeFactory {
             map.put(Clock.DESCRIPTION.getName(), new QuartusPinCreator(Clock.DESCRIPTION.getName(), true, "C"));
             map.put(Out.DESCRIPTION.getName(), new QuartusPinCreator(Out.DESCRIPTION.getName(), false, "in"));
         }
+
+        for (QuartusPart p : QuartusParts.getAll())
+            map.put(p.getDigitalName(), p::createShape);
 
         final JarComponentManager jcm = library.getJarComponentManager();
         if (jcm != null)

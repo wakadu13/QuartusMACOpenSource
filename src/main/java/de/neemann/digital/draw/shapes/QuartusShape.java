@@ -31,6 +31,7 @@ public class QuartusShape implements Shape {
     private static final int VALUE_RAD = 9;
     private static final Style INVISIBLE = Style.NORMAL.deriveStyle(0, false, new java.awt.Color(0, 0, 0, 0));
     private final CustomShapeDescription description;
+    private final String label;
     private final Shape inner;
     private final Pins pins;
     private final boolean showInputValue;
@@ -48,7 +49,22 @@ public class QuartusShape implements Shape {
      * @throws PinException PinException
      */
     public QuartusShape(CustomShapeDescription description, Shape inner, PinDescriptions inputs, PinDescriptions outputs) throws PinException {
+        this(description, inner, inputs, outputs, null);
+    }
+
+    /**
+     * Creates a new instance
+     *
+     * @param description the drawing
+     * @param inner       the original shape, used for interaction, maybe null
+     * @param inputs      the inputs
+     * @param outputs     the outputs
+     * @param label       the label to draw at the label position of the drawing, maybe null
+     * @throws PinException PinException
+     */
+    public QuartusShape(CustomShapeDescription description, Shape inner, PinDescriptions inputs, PinDescriptions outputs, String label) throws PinException {
         this.description = description;
+        this.label = label;
         this.inner = inner;
         pins = new Pins();
         for (PinDescription p : outputs)
@@ -113,6 +129,10 @@ public class QuartusShape implements Shape {
                 p = pins.iterator().next().getPos();
             graphic.drawLine(p, p.add(1, 0), INVISIBLE);
         }
+
+        CustomShapeDescription.TextHolder l = description.getLabel();
+        if (l != null && label != null && !label.isEmpty())
+            l.drawText(graphic, label);
 
         if (value != null) {
             CustomShapeDescription.Pin vp = description.getPinOrNull(ShapeBuilder.VALUE_POS);

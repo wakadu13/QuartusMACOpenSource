@@ -247,19 +247,15 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
                         .add(Stop.DESCRIPTION)
                         .add(AsyncSeq.DESCRIPTION));
 
-        LibraryNode quartusPrimitives = new LibraryNode(Lang.get("lib_quartusPrimitives"));
-        for (QuartusPart p : QuartusParts.getPrimitives())
-            quartusPrimitives.add(p.getTypeDescription());
-        LibraryNode quartusLPM = new LibraryNode(Lang.get("lib_quartusMegafunctions"));
-        for (QuartusPart p : QuartusParts.getMegafunctions())
-            quartusLPM.add(p.getTypeDescription());
-        LibraryNode quartus74 = new LibraryNode(Lang.get("lib_quartusMacrofunctions"));
-        for (QuartusPart p : QuartusParts.getMacrofunctions())
-            quartus74.add(p.getTypeDescription());
-        root.add(new LibraryNode(Lang.get("lib_quartus"))
-                .add(quartusPrimitives)
-                .add(quartusLPM)
-                .add(quartus74));
+        LibraryNode quartus = new LibraryNode(Lang.get("lib_quartus"));
+        for (Map.Entry<String, List<QuartusPart>> e : QuartusParts.getCategories().entrySet()) {
+            LibraryNode n = quartus;
+            for (String folder : e.getKey().split("/"))
+                n = getOrCreateChild(n, folder);
+            for (QuartusPart p : e.getValue())
+                n.add(p.getTypeDescription());
+        }
+        root.add(quartus);
 
         addExternalJarComponents(jarFile);
 
@@ -277,6 +273,15 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
             if (d != null && d.hasAttribute(Keys.BLOWN))
                 isProgrammable.add(d.getName());
         });
+    }
+
+    private static LibraryNode getOrCreateChild(LibraryNode parent, String name) {
+        for (LibraryNode n : parent)
+            if (n.getName().equals(name))
+                return n;
+        LibraryNode n = new LibraryNode(name);
+        parent.add(n);
+        return n;
     }
 
     void addExternalJarComponents(File file) {
