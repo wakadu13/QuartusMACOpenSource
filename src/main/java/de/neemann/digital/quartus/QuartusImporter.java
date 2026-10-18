@@ -24,6 +24,10 @@ import de.neemann.digital.quartus.lib.QuartusParts;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,6 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +56,7 @@ public final class QuartusImporter {
             "(?is)\\bSUBDESIGN\\s+(\\w+)\\s*\\((.*?)\\)\\s*(VARIABLE|BEGIN)");
 
     private static final String SOURCE_NOT_FOUND = "source not found";
+    private static final String IMPORT_INFO = "quartus-import.properties";
 
     private final QuartusProject project;
     private final File outDir;
@@ -60,6 +66,7 @@ public final class QuartusImporter {
     private final ArrayList<File> created = new ArrayList<>();
     private HashMap<String, File> fileIndex;
     private HashMap<String, HdlEntity> entityIndex;
+    private Properties importInfo;
 
     /**
      * Creates a new importer
@@ -449,10 +456,39 @@ public final class QuartusImporter {
         return sb.build();
     }
 
+    /*
+     * Saves the circuit. A circuit which was modified by the user after the last import is not overwritten.
+     * The time stamps of the created files are stored in the file IMPORT_INFO.
+     */
     private void save(Circuit c, DesignInterface ifc) throws IOException {
         File f = new File(outDir, getElementName(ifc));
+        Properties info = getImportInfo();
+        if (f.exists()) {
+            String stamp = info.getProperty(f.getName());
+            if (stamp == null || Long.parseLong(stamp) != f.lastModified()) {
+                warn(f.getName() + " was modified in Digital and is not overwritten. Delete it to import it again.");
+                created.add(f);
+                return;
+            }
+        }
         c.save(f);
         created.add(f);
+        info.setProperty(f.getName(), Long.toString(f.lastModified()));
+        try (OutputStream out = new FileOutputStream(new File(outDir, IMPORT_INFO))) {
+            info.store(out, "Files created by the Quartus import");
+        }
+    }
+
+    private Properties getImportInfo() throws IOException {
+        if (importInfo == null) {
+            importInfo = new Properties();
+            File f = new File(outDir, IMPORT_INFO);
+            if (f.exists())
+                try (InputStream in = new FileInputStream(f)) {
+                    importInfo.load(in);
+                }
+        }
+        return importInfo;
     }
 
     // ------------------------------------------------------------------------------------

@@ -129,4 +129,19 @@ public class QuartusImportTest extends TestCase {
         }
         m.close();
     }
+
+    public void testModifiedFilesAreNotOverwritten() throws Exception {
+        File bdf = new File(Resources.getRoot(), "quartus/counter/counter.bdf");
+        File out = tempDir();
+        QuartusImporter imp = QuartusImporter.importFile(bdf, out);
+        assertEquals(0, imp.getWarnings().size());
+        // second import overwrites the unmodified file
+        imp = QuartusImporter.importFile(bdf, out);
+        assertEquals(0, imp.getWarnings().size());
+        // a modified file is kept
+        File dig = imp.getTopFile();
+        assertTrue(dig.setLastModified(dig.lastModified() + 10000));
+        imp = QuartusImporter.importFile(bdf, out);
+        assertEquals(1, imp.getWarnings().size());
+    }
 }
