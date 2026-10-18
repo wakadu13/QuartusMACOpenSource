@@ -1028,4 +1028,16 @@ public final class Keys {
      */
     public static final Key<Boolean> SKIP_HDL =
             new Key<>("skipHDL", false).setSecondary();
+
+    /**
+     * Parameters of a Quartus component, e.g. "LPM_WIDTH=8;LPM_DIRECTION=UP"
+     */
+    public static final Key<String> QUARTUS_PARAMS =
+            new Key<>("quartusParams", "");
+
+    /**
+     * Uses Quartus like shapes
+     */
+    public static final Key<Boolean> SETTINGS_QUARTUS_SHAPES =
+            new Key<>("quartusShapes", true).setRequiresRestart();
 }

@@ -51,4 +51,10 @@ public interface Shape extends Drawable, ObservableValueReader {
     default void registerModel(ModelCreator modelCreator, Model model, ModelEntry element) {
     }
 
+    /**
+     * @return true if the pins of this shape are marked by small circles
+     */
+    default boolean showPinMarkers() {
+        return true;
+    }
 }

@@ -211,7 +211,7 @@ public class VisualElement implements Drawable, Movable, AttributeListener {
         Graphic gr = new GraphicTransform(graphic, getTransform());
         Shape shape = getShape();
         shape.drawTo(gr, highLight);
-        if (!graphic.isFlagSet(Graphic.Flag.noPinMarker))
+        if (!graphic.isFlagSet(Graphic.Flag.noPinMarker) && shape.showPinMarkers())
             for (Pin p : shape.getPins())
                 gr.drawCircle(p.getPos().add(-PIN, -PIN), p.getPos().add(PIN, PIN),
                         p.getDirection() == Pin.Direction.input ? Style.WIRE : Style.WIRE_OUT);

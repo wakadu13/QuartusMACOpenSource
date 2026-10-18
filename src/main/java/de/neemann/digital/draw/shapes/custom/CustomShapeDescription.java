@@ -46,11 +46,21 @@ public final class CustomShapeDescription implements Iterable<CustomShapeDescrip
      * @return the position of the pin
      * @throws PinException thrown if pin is not found
      */
-    Pin getPin(String name) throws PinException {
+    public Pin getPin(String name) throws PinException {
         final Pin pin = pins.get(name);
         if (pin == null)
             throw new PinException(Lang.get("err_customShapeHasNoPin_N", name));
         return pin;
+    }
+
+    /**
+     * Returns the position of the given pin.
+     *
+     * @param name the name of the pin
+     * @return the pin or null if not present
+     */
+    public Pin getPinOrNull(String name) {
+        return pins.get(name);
     }
 
     @Override
@@ -139,11 +149,22 @@ public final class CustomShapeDescription implements Iterable<CustomShapeDescrip
         return super.hashCode();
     }
 
-    private interface Transformable {
+    /**
+     * Something which can be transformed
+     */
+    public interface Transformable {
+        /**
+         * Transforms this instance
+         *
+         * @param tr the transformation
+         */
         void transform(Transform tr);
     }
 
-    interface Holder extends Drawable, Transformable {
+    /**
+     * A drawable part of the shape
+     */
+    public interface Holder extends Drawable, Transformable {
     }
 
     /**

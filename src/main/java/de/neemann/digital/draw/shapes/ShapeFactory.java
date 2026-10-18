@@ -193,6 +193,24 @@ public final class ShapeFactory {
     public Shape getShape(String elementName, ElementAttributes elementAttributes) {
         Creator cr = map.get(elementName);
         try {
+            if (library != null && elementAttributes.contains(Keys.CUSTOM_SHAPE)) {
+                final CustomShapeDescription quartusShape = elementAttributes.get(Keys.CUSTOM_SHAPE);
+                if (!quartusShape.isEmpty()) {
+                    // element with an individual drawing, e.g. imported from Quartus
+                    ElementTypeDescription pt = library.getElementType(elementName, elementAttributes);
+                    PinDescriptions inputs = pt.getInputDescription(elementAttributes);
+                    PinDescriptions outputs = pt.getOutputDescriptions(elementAttributes);
+                    Shape inner = null;
+                    if (cr != null) {
+                        try {
+                            inner = cr.create(elementAttributes, inputs, outputs);
+                        } catch (Exception e) {
+                            inner = null;
+                        }
+                    }
+                    return new QuartusShape(quartusShape, inner, inputs, outputs);
+                }
+            }
             if (cr == null) {
                 if (library == null)
                     throw new NodeException(Lang.get("err_noShapeFoundFor_N", elementName));
