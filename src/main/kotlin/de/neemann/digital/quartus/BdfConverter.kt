@@ -587,6 +587,8 @@ internal class BdfConverter(
         for (s in ArrayList(signals)) if (!s.driven && s.hasSinks) feedSignal(s, atoms)
 
         for (s in signals) {
+            // a labeled wire connected to nothing
+            if (!s.driven && !s.hasSinks && !s.needsTunnel) continue
             val multi = s.nets.size > 1 || s.needsTunnel
             for (n in s.nets) {
                 var hasTunnel = false
@@ -648,14 +650,18 @@ internal class BdfConverter(
             src.needsTunnel = true
             val keys = arrayListOf(ShapeBuilder.IN + splitterPin(0, src.bits))
             val names = arrayListOf(src.tunnelName)
-            val outSpec = srcRuns.joinToString(",") { r ->
+            // a range of the source used several times (e.g. a sign extension) is sliced only once
+            val slices = LinkedHashMap<Pair<Int, Int>, String>()
+            for (r in srcRuns) {
                 val lo = b[r[0]].bit
-                val tn = if (runs.size == 1) s.tunnelName else "\$${unitName}_t${tmpCounter++}"
-                runTunnel[r] = tn
-                keys.add(ShapeBuilder.OUT + splitterPin(lo, r[1]))
-                names.add(tn)
-                "$lo-${lo + r[1] - 1}"
+                runTunnel[r] = slices.getOrPut(lo to r[1]) {
+                    val tn = if (runs.size == 1) s.tunnelName else "\$${unitName}_t${tmpCounter++}"
+                    keys.add(ShapeBuilder.OUT + splitterPin(lo, r[1]))
+                    names.add(tn)
+                    tn
+                }
             }
+            val outSpec = slices.keys.joinToString(",") { (lo, len) -> "$lo-${lo + len - 1}" }
             addHiddenSplitter(src.bits.toString(), outSpec, keys, names)
         }
         if (runs.size == 1) return

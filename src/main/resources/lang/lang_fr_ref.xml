@@ -2921,4 +2921,12 @@ Warnings:</string>
     <string name="elem_Quartus_74240_tt">Quartus 74240: Octal tri-state buffer (inverting)</string>
     <string name="elem_Quartus_74541">74541</string>
     <string name="elem_Quartus_74541_tt">Quartus 74541: Octal buffer with tri-state outputs</string>
+    <!-- Quartus export -->
+    <string name="menu_exportQuartus">Export to Quartus (bdf)</string>
+    <string name="menu_exportQuartus_tt">Exports the circuit to a Quartus block design file. Embedded circuits are exported to their own files, ROM contents to mif files.</string>
+    <string name="msg_quartusExportWarnings">The circuit was exported. Warnings:</string>
+    <string name="cli_help_quartusExport">Exports a circuit to a Quartus block design file (bdf).</string>
+    <string name="cli_help_quartusExport_dig">The circuit to export.</string>
+    <string name="cli_help_quartusExport_bdf">The bdf file to create. Default is the name of the circuit with the extension bdf.</string>
+    <string name="cli_errorExportingQuartus">Error exporting the circuit to Quartus.</string>
 </resources>

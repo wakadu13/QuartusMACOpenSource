@@ -2996,4 +2996,12 @@ Warnungen:</string>
     <string name="elem_Quartus_74240_tt">Quartus 74240: Octal tri-state buffer (inverting)</string>
     <string name="elem_Quartus_74541">74541</string>
     <string name="elem_Quartus_74541_tt">Quartus 74541: Octal buffer with tri-state outputs</string>
+    <!-- Quartus export -->
+    <string name="menu_exportQuartus">Export nach Quartus (bdf)</string>
+    <string name="menu_exportQuartus_tt">Exportiert die Schaltung in eine Quartus Block-Design-Datei. Eingebettete Schaltungen werden in eigene Dateien exportiert, ROM-Inhalte in mif-Dateien.</string>
+    <string name="msg_quartusExportWarnings">Die Schaltung wurde exportiert. Warnungen:</string>
+    <string name="cli_help_quartusExport">Exportiert eine Schaltung in eine Quartus Block-Design-Datei (bdf).</string>
+    <string name="cli_help_quartusExport_dig">Die zu exportierende Schaltung.</string>
+    <string name="cli_help_quartusExport_bdf">Die zu erzeugende bdf-Datei. Standard ist der Name der Schaltung mit der Endung bdf.</string>
+    <string name="cli_errorExportingQuartus">Fehler beim Export der Schaltung nach Quartus.</string>
 </resources>

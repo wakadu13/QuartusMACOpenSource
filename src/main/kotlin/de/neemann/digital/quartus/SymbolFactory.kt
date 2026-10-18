@@ -219,7 +219,7 @@ object SymbolFactory {
         val top = inputs.filter { it.uppercase() in setOf("PRN", "PRE") }
         val bottom = inputs.filter { it.uppercase() in setOf("CLRN", "CLR") }
         val left = inputs.filter { it !in top && it !in bottom }
-        val boxBottom = 24 + STEP * (maxOf(left.size, outputs.size) - 1) + 12
+        val boxBottom = 24 + STEP * (maxOf(left.size, outputs.size) - 1) + if (bottom.isEmpty()) 12 else 20
         val h = (boxBottom + 12 + 7) / 8 * 8
         return QSymbol(name, 64, h).apply {
             typeText = QSymbol.createText(name, 1, 3, 6)
@@ -244,9 +244,9 @@ object SymbolFactory {
             for (n in bottom) {
                 if (n.endsWith("N", true)) {
                     circle(32, boxBottom + 4, 4)
-                    port(n, Direction.INPUT, 32, h, 32, boxBottom + 8, label = QSymbol.createText(n, 21, boxBottom - 6, 6))
+                    port(n, Direction.INPUT, 32, h, 32, boxBottom + 8, label = QSymbol.createText(n, 22, boxBottom - 5, 6))
                 } else
-                    port(n, Direction.INPUT, 32, h, 32, boxBottom, label = QSymbol.createText(n, 21, boxBottom - 6, 6))
+                    port(n, Direction.INPUT, 32, h, 32, boxBottom, label = QSymbol.createText(n, 22, boxBottom - 5, 6))
             }
             outputs.forEachIndexed { i, n ->
                 val y = 24 + STEP * i

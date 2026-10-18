@@ -86,6 +86,44 @@ class QSymbol(val name: String, var width: Int, var height: Int) {
     /** returns the port with the given name */
     fun getPort(name: String): QPort? = ports.firstOrNull { it.name.equals(name, ignoreCase = true) }
 
+    /** returns the bounding box of the drawing, the texts and the ports */
+    fun bounds(): Rect {
+        var b: Rect? = null
+        fun add(r: Rect?) {
+            if (r == null) return
+            val n = Rect(minOf(r.x1, r.x2), minOf(r.y1, r.y2), maxOf(r.x1, r.x2), maxOf(r.y1, r.y2))
+            b = b?.let { Rect(minOf(it.x1, n.x1), minOf(it.y1, n.y1), maxOf(it.x2, n.x2), maxOf(it.y2, n.y2)) } ?: n
+        }
+        fun add(g: Graphic) {
+            if (g.type == GraphicType.LINE) add(Rect(g.p1!!.x, g.p1.y, g.p2!!.x, g.p2.y))
+            else add(g.text?.rect ?: g.rect)
+        }
+        graphics.forEach { add(it) }
+        for (p in ports) {
+            add(Rect(p.pt.x, p.pt.y, p.pt.x, p.pt.y))
+            p.line?.let { add(it) }
+            add(p.label?.rect)
+        }
+        add(typeText?.rect)
+        add(instanceText?.rect)
+        return b ?: Rect(0, 0, 0, 0)
+    }
+
+    /** returns a copy of this symbol moved by the given offset */
+    fun translated(dx: Int, dy: Int): QSymbol {
+        fun p(v: Point?) = v?.add(dx, dy)
+        fun r(v: Rect?) = v?.let { Rect(it.x1 + dx, it.y1 + dy, it.x2 + dx, it.y2 + dy) }
+        fun t(v: Text?) = v?.let { Text(it.text, r(it.rect)!!, it.fontSize, it.font, it.bold, it.vertical, it.invisible) }
+        fun g(v: Graphic?) = v?.let { Graphic(it.type, p(it.p1), p(it.p2), r(it.rect), it.lineWidth, t(it.text)) }
+        val s = QSymbol(name, width, height)
+        graphics.forEach { s.graphics.add(g(it)!!) }
+        ports.forEach { s.ports.add(QPort(it.name, it.direction, p(it.pt)!!, g(it.line), t(it.label))) }
+        s.valuePos = p(valuePos)
+        s.typeText = t(typeText)
+        s.instanceText = t(instanceText)
+        return s
+    }
+
     companion object {
         /** creates a text whose left center is at (x,y) */
         @JvmStatic

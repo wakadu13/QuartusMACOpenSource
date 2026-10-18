@@ -50,7 +50,11 @@ object QuartusLibrary {
         internal fun port(quartus: String, key: String) = apply { ports[quartus.uppercase()] = key }
 
         /** returns the Digital pin key (including the direction prefix) of the given Quartus port or null */
-        fun getPinKey(quartusPort: String): String? = ports[quartusPort.trim().uppercase()]
+        fun getPinKey(quartusPort: String): String? {
+            val n = quartusPort.trim().uppercase()
+            // a port name may contain the bus range, e.g. "q[7..0]"
+            return ports[n] ?: ports[n.substringBefore('[').trim()]
+        }
     }
 
     /** true if the given name is a megafunction which is simulated natively */

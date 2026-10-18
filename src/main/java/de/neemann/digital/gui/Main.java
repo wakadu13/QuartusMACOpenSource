@@ -54,6 +54,7 @@ import de.neemann.digital.hdl.printer.CodePrinter;
 import de.neemann.digital.hdl.verilog2.VerilogGenerator;
 import de.neemann.digital.hdl.vhdl2.VHDLGenerator;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.BdfExporter;
 import de.neemann.digital.quartus.QuartusImporter;
 import de.neemann.digital.testing.TestingDataException;
 import de.neemann.digital.toolchain.Configuration;
@@ -683,6 +684,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
 
         export.add(createVHDLExportAction().createJMenuItem());
         export.add(createVerilogExportAction().createJMenuItem());
+        export.add(createQuartusExportAction().createJMenuItem());
 
         export.addSeparator();
         export.add(new ExportZipAction(this).createJMenuItem());
@@ -740,6 +742,38 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 );
             }
         }.setToolTip(Lang.get("menu_exportVHDL_tt"));
+    }
+
+    private ToolTipAction createQuartusExportAction() {
+        return new ToolTipAction(Lang.get("menu_exportQuartus")) {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JFileChooser fc = new MyFileChooser();
+                if (filename != null)
+                    fc.setSelectedFile(SaveAsHelper.checkSuffix(filename, "bdf"));
+
+                ElementAttributes settings = Settings.getInstance().getAttributes();
+                File exportDir = settings.getFile("exportDirectory");
+                if (exportDir != null)
+                    fc.setCurrentDirectory(exportDir);
+
+                fc.addChoosableFileFilter(new FileNameExtensionFilter("Quartus Block Design File", "bdf"));
+                new SaveAsHelper(Main.this, fc, "bdf").checkOverwrite(
+                        file -> {
+                            settings.setFile("exportDirectory", file.getParentFile());
+                            BdfExporter exporter = new BdfExporter(library);
+                            exporter.export(circuitComponent.getCircuit(), file);
+                            if (!exporter.getWarnings().isEmpty()) {
+                                StringBuilder sb = new StringBuilder(Lang.get("msg_quartusExportWarnings"));
+                                for (String w : exporter.getWarnings())
+                                    sb.append("\n").append(w);
+                                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(Main.this, sb.toString(),
+                                        Lang.get("menu_exportQuartus"), JOptionPane.INFORMATION_MESSAGE));
+                            }
+                        }
+                );
+            }
+        }.setToolTip(Lang.get("menu_exportQuartus_tt"));
     }
 
     private ToolTipAction createVerilogExportAction() {
