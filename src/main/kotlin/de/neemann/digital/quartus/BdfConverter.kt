@@ -281,6 +281,18 @@ internal class BdfConverter(
             t.clockInput = !out && CLOCK_NAME.matches(ip.quartusName)
             add(e, t)
         }
+        // the symbol may be older than the design: the missing ports are added below the symbol, unconnected
+        val present = e.terms.map { it.pinKey.substring(2) }.toSet()
+        var y = s.rect.y2 + 8
+        for (ip in sub.ports.filter { it.label !in present }) {
+            warn("the symbol of '${s.getTypeName()}' (${s.getInstanceName()}) has no port '${ip.quartusName}', " +
+                "update the symbol in Quartus; the port is left unconnected")
+            val t = Terminal(Point(s.rect.x1, y), e, (if (ip.isOutput) ShapeBuilder.OUT else ShapeBuilder.IN) + ip.label,
+                ip.isOutput, ip.bits, "${type(s)}.${ip.quartusName}")
+            t.unconnectedDefault = if (ip.isDefaultHigh) -1 else 0
+            add(e, t)
+            y += 16
+        }
         elems.add(e)
     }
 

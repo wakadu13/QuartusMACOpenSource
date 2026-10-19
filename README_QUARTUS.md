@@ -46,15 +46,25 @@ java -cp Digital.jar CLI quartusExport -dig MonCircuit.dig [-bdf MonCircuit.bdf]
 | `.bsf` | symbole (*Block Symbol File*) | utilisé pour l'interface d'un bloc quand la source est absente |
 | `.mif`, `.hex` | contenu des mémoires | lus pour `LPM_FILE` / `INIT_FILE` (`LPM_ROM`, `LPM_RAM_DQ`, `ALTSYNCRAM`) ; écrits lors de l'export des ROM |
 | `.vwf` | chronogramme (*Vector Waveform File*) | converti en **cas de test** Digital (voir plus bas) |
-| `.vhd`, `.vhdl` | VHDL | entité simulée par **GHDL** (élément *External File* de Digital) ; les enveloppes MegaWizard de mégafonctions supportées sont simulées nativement |
+| `.vhd`, `.vhdl` | VHDL | entité simulée par **GHDL** si installé, sinon par le **simulateur VHDL intégré** (voir plus bas) ; les enveloppes MegaWizard de mégafonctions supportées sont simulées nativement |
 | `.v`, `.sv` | Verilog | module simulé par **Icarus Verilog** ; mégafonctions comme ci-dessus |
-| `.tdf` | AHDL | interface lue (`SUBDESIGN`), bloc importé vide (AHDL non simulé) |
+| `.tdf` | AHDL | enveloppes MegaWizard (`lpm_counter`, `lpm_decode`, `lpm_mux`…) simulées nativement ; pour les autres fichiers AHDL, seule l'interface (`SUBDESIGN`) est lue et le bloc est importé vide |
 | `.qws`, `.gdf`, `.sym` | espace de travail, anciens formats MAX+plus II | ignorés |
 
 Les sous-blocs sont recherchés dans : les fichiers listés dans le projet, le dossier du projet et ses
 sous-dossiers, les `SEARCH_PATH`/`USER_LIBRARIES`, et les dossiers voisins du projet (par exemple
 `../MaBiblio`). Un bloc dont la source est introuvable est importé comme **bloc vide** (sorties à 0) en
 gardant son dessin, pour que le schéma reste complet.
+
+## Simulateur VHDL intégré
+
+Sans GHDL (cas habituel sur macOS), les fichiers VHDL sont simulés par un petit simulateur intégré. Il gère le
+VHDL synthétisable des bibliothèques de cours et les fichiers VHDL que Quartus génère à partir d'un schéma :
+signaux `std_logic`, `std_logic_vector`, `unsigned`, `signed`, `integer`, affectations concurrentes et
+conditionnelles (`when … else`, `with … select`), processus avec liste de sensibilité ou `WAIT UNTIL`, `IF`,
+`CASE`, variables, `rising_edge`/`falling_edge`/`'EVENT`, opérateurs logiques, relationnels et arithmétiques.
+Il ne gère pas les instanciations de composants, les boucles, les types énumérés ni les fonctions : un tel
+fichier nécessite GHDL. Les valeurs indéfinies (`'U'`, `'X'`, `'Z'`) valent `'0'`.
 
 ## Ce qui est converti
 
@@ -156,7 +166,9 @@ portes ANSI/IEEE. Les circuits importés gardent toujours le dessin d'origine de
 
 ## Limites connues
 
-- AHDL (`.tdf`), les anciens schémas MAX+plus II (`.gdf`) et les symboles binaires `.sym` ne sont pas simulés.
+- L'AHDL (`.tdf`) écrit à la main, les anciens schémas MAX+plus II (`.gdf`) et les symboles binaires `.sym` ne sont pas simulés.
+- Si le symbole d'un bloc est plus ancien que le bloc (un port ajouté depuis), le port manquant est ajouté
+  sous le symbole, non connecté, avec un avertissement.
 - La simulation des blocs VHDL/Verilog nécessite GHDL ou Icarus Verilog (chemins dans *Settings*), et les
   bibliothèques Altera (`altera_mf`, `lpm`) ne sont pas fournies : seules les mégafonctions listées plus
   haut sont simulées sans elles.

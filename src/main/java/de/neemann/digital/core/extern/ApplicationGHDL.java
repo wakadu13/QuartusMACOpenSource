@@ -11,6 +11,7 @@ import de.neemann.digital.core.extern.handler.ProcessInterface;
 import de.neemann.digital.core.extern.handler.StdIOInterface;
 import de.neemann.digital.gui.Settings;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.VhdlInterpreter;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,9 +64,12 @@ public class ApplicationGHDL extends ApplicationVHDLStdIO {
         } catch (IOException e) {
             if (file != null)
                 ProcessStarter.removeFolder(file.getParentFile());
-            if (ghdlNotFound(e))
+            if (ghdlNotFound(e)) {
+                // without GHDL the built-in VHDL simulator is used if it supports the code
+                if (VhdlInterpreter.check(label, code) == null)
+                    return VhdlInterpreter.start(label, code, inputs, outputs);
                 throw new IOException(Lang.get("err_ghdlNotInstalled"));
-            else
+            } else
                 throw e;
         }
     }

@@ -34,8 +34,14 @@ class HdlEntity private constructor(
     /** the port map of the megafunction: megafunction port (lower case) to entity signal */
     val megafunctionPortMap = LinkedHashMap<String, String>()
 
+    /** a part of a megafunction port connected to an entity signal */
+    class Slice(val port: String, val lo: Int, val hi: Int)
+
+    /** the entity signals connected to a part of a megafunction port, e.g. eq3 = component.eq[3..3] */
+    val megafunctionSlices = LinkedHashMap<String, Slice>()
+
     /** the language of the file */
-    enum class Language { VHDL, VERILOG }
+    enum class Language { VHDL, VERILOG, AHDL }
 
     /** a port of an entity */
     class Port(
@@ -307,6 +313,73 @@ class HdlEntity private constructor(
                 }
             }
             return null
+        }
+
+        private val AHDL_SUBDESIGN = Regex("""(?is)\bSUBDESIGN\s+(\w+)\s*\((.*?)\)\s*(VARIABLE|BEGIN)""")
+        private val AHDL_INSTANCE = Regex("""(?is)\b(\w+)\s*:\s*(\w+)\s+WITH\s*\((.*?)\)\s*;""")
+        private val AHDL_BODY = Regex("""(?is)\bBEGIN\b(.*)\bEND\b""")
+        private val AHDL_PORT_REF = Regex("""(\w+)\.(\w+)((?:\s*\[\s*\d+\s*\.\.\s*\d+\s*])*)""")
+        private val AHDL_RANGE = Regex("""\[\s*(\d+)\s*\.\.\s*(\d+)\s*]""")
+
+        /**
+         * Parses an AHDL file. Only the interface is read; if the design is a megafunction created by the
+         * MegaWizard, the megafunction, its parameters and its port map are also extracted.
+         */
+        @JvmStatic
+        fun parseAHDL(text: String, f: File?): HdlEntity? {
+            val code = text.replace(Regex("(?s)%.*?%"), " ").replace(Regex("--[^\n]*"), " ")
+            val m = AHDL_SUBDESIGN.find(code) ?: return null
+            val ports = ArrayList<Port>()
+            for (decl in splitTop(m.groupValues[2], ';')) {
+                val c = decl.indexOf(':')
+                if (c < 0) continue
+                val type = decl.substring(c + 1).trim().uppercase()
+                val dir = when {
+                    type.startsWith("OUTPUT") -> BdfFile.Direction.OUTPUT
+                    type.startsWith("BIDIR") -> BdfFile.Direction.BIDIR
+                    else -> BdfFile.Direction.INPUT
+                }
+                splitTop(decl.substring(0, c), ',').map { it.trim() }.filter { it.isNotEmpty() }.forEach {
+                    val bn = BusName.parse(it)
+                    ports.add(Port(it, dir, bn.bits, it.contains('['), type.contains("VCC")))
+                }
+            }
+            val e = HdlEntity(m.groupValues[1], Language.AHDL, f, ports, emptyMap())
+            for (inst in AHDL_INSTANCE.findAll(code)) {
+                val comp = inst.groupValues[2].lowercase()
+                if (!QuartusLibrary.isMegafunction(comp)) continue
+                e.megafunction = comp
+                for (a in splitTop(inst.groupValues[3], ',')) {
+                    val eq = a.indexOf('=')
+                    if (eq > 0) e.megafunctionParams[a.substring(0, eq).trim().uppercase()] = unquote(a.substring(eq + 1).trim())
+                }
+                val name = inst.groupValues[1]
+                val body = AHDL_BODY.find(code)?.groupValues?.get(1) ?: ""
+                for (stmt in splitTop(body, ';')) {
+                    val eq = stmt.indexOf('=')
+                    if (eq < 0) continue
+                    val l = stmt.substring(0, eq).trim()
+                    val r = stmt.substring(eq + 1).trim()
+                    val (ref, signal) = when {
+                        l.startsWith("$name.", true) -> l to r
+                        r.startsWith("$name.", true) -> r to l
+                        else -> continue
+                    }
+                    val pm = AHDL_PORT_REF.matchEntire(ref) ?: continue
+                    val port = pm.groupValues[2].lowercase()
+                    val ranges = AHDL_RANGE.findAll(pm.groupValues[3]).map { it.groupValues[1].toInt() to it.groupValues[2].toInt() }.toList()
+                    val sig = signal.replace(Regex("\\s"), "")
+                    when {
+                        // a word of a two dimensional port like data[3..3][7..0] is the port data3x
+                        ranges.size == 2 && ranges[0].first == ranges[0].second -> e.megafunctionPortMap["$port${ranges[0].first}x"] = sig
+                        ranges.size == 1 -> e.megafunctionSlices[sig] =
+                            Slice(port, minOf(ranges[0].first, ranges[0].second), maxOf(ranges[0].first, ranges[0].second))
+                        else -> e.megafunctionPortMap[port] = sig
+                    }
+                }
+                break
+            }
+            return e
         }
 
         /** splits the string at the separator, but not inside brackets or strings */

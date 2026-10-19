@@ -30,3 +30,18 @@ Sur GitHub : ouvrez ce dossier, puis **Add file → Upload files**, glissez les 
 Copiez donc ce dossier à côté de vos projets (par exemple `MesProjets/bibliotheque-EA` et
 `MesProjets/Ohmmetre/Ohmmetre.qpf`), ou ajoutez son chemin aux bibliothèques du projet dans Quartus
 (`USER_LIBRARIES` / `SEARCH_PATH` du `.qsf`).
+
+## État de la bibliothèque (vérification)
+
+| Bloc | Résultat |
+|---|---|
+| `div2`, `div3`, `div5`, `Div6` | divisent par 2, 3, 5 et 6 |
+| `Clock_Div` (avec `CLK_DIV.VHD`) | 1 MHz, 100 kHz, 10 kHz… à partir de 50 MHz (VHDL simulé sans GHDL) |
+| `CLK_DIV.VHD`, `DEBOUNCE.VHD`, `DEC_7SEG.VHD`, `ShiftRight16.vhd` | simulés par le simulateur VHDL intégré |
+| `detect0vers1`, `detect1vers0` | impulsion sur front montant / descendant |
+| `compteur3b`, `decompteurMod16`, `decompteurMod32`, `decode1parmi8`, `mux8par7` (AHDL MegaWizard) | simulés nativement |
+| `Shift8`, `ShiftRight32` | registres à décalage corrects |
+| `DriverAffich8D` | s'importe ; son symbole `ShiftRight16` n'a pas l'entrée `SerialIn` (ancienne version) |
+| `Div7` | ne fonctionne pas : le bloc `Divideur7` manque |
+| `GenerateurArinc` | incomplet : les blocs `XOR8` et `XOR4` manquent |
+| `Afficheur8D` | incomplet : `comptdecompt12b`, `affich3digit`, `InterfaceBouton` et `DriverAffich4D` manquent |

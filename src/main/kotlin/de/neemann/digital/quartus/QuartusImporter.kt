@@ -16,6 +16,9 @@ import de.neemann.digital.draw.elements.Circuit
 import de.neemann.digital.draw.elements.Wire
 import de.neemann.digital.draw.graphics.Orientation
 import de.neemann.digital.draw.graphics.Vector
+import de.neemann.digital.draw.elements.Tunnel
+import de.neemann.digital.draw.elements.VisualElement
+import de.neemann.digital.core.wiring.Splitter
 import de.neemann.digital.draw.shapes.CustomCircuitShapeType
 import de.neemann.digital.draw.shapes.custom.CustomShapeDescription
 import de.neemann.digital.quartus.lib.Params
@@ -388,7 +391,10 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
     }
 
     private fun convertAhdl(name: String, src: File, symbol: BdfFile.Symbol?): DesignInterface {
-        val text = String(src.readBytes(), Charsets.ISO_8859_1).replace(Regex("(?s)%.*?%"), " ").replace(Regex("--[^\n]*"), " ")
+        val raw = String(src.readBytes(), Charsets.ISO_8859_1)
+        // a megafunction created by the MegaWizard in AHDL is simulated natively
+        HdlEntity.parseAHDL(raw, src)?.takeIf { it.megafunction != null }?.let { return convertHdl(it, symbol) }
+        val text = raw.replace(Regex("(?s)%.*?%"), " ").replace(Regex("--[^\n]*"), " ")
         val m = AHDL_SUBDESIGN.find(text) ?: return blackBox(name, symbol, "AHDL file without SUBDESIGN")
         val ports = ArrayList<DesignInterface.Port>()
         for (decl in HdlEntity.splitTop(m.groupValues[2], ';')) {
@@ -434,11 +440,24 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
                 val key = pinKey(part, mport) ?: continue
                 portMap[ip.label] = key
             }
+            // parts of megafunction ports, e.g. the single outputs of a decoder
+            val slices = HashMap<String, IntRange>()
+            for ((signal, sl) in entity.megafunctionSlices) {
+                val ip = ifc.find(signal.replace(Regex("[(\\[].*"), "").trim()) ?: continue
+                val key = pinKey(part, sl.port) ?: continue
+                portMap[ip.label] = key
+                val spec = if (ip.isOutput) part.getOutput(sl.port) else part.getInput(sl.port)
+                val width = spec?.getWidth(params) ?: continue
+                if (sl.lo != 0 || sl.hi != width - 1) {
+                    if (ip.isOutput) slices[ip.label] = sl.lo..sl.hi
+                    else warn("${entity.name}: the input '$signal' is connected to a part of the port '${sl.port}', this is not supported")
+                }
+            }
             // ports which are not found in the port map are connected by name (e.g. altpll, lpm_mux)
             for (ip in ifc.ports) if (ip.label !in portMap) pinKey(part, ip.quartusName)?.let { portMap[ip.label] = it }
             params.set(Params.PORTS, portMap.values.map { it.substring(2) }.distinct().joinToString(","))
             if (mf == "altpll") warn("${entity.name}: ALTPLL is simulated as a clock buffer, the frequency is not changed")
-            c = wrapperCircuit(ifc, Inner.Part(part, params, portMap))
+            c = wrapperCircuit(ifc, Inner.Part(part, params, portMap, slices))
             c.attributes.set(Keys.DESCRIPTION, "Megafunction ${mf.uppercase()} imported from ${entity.file?.name}\n$params")
         } else {
             ifc = DesignInterface(entity.name, DesignInterface.Kind.HDL, ports)
@@ -456,7 +475,8 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
 
     /** the element inside a wrapper circuit */
     private sealed class Inner {
-        class Part(val part: QuartusPart, val params: Params, val portMap: Map<String, String>) : Inner()
+        class Part(val part: QuartusPart, val params: Params, val portMap: Map<String, String>,
+                   val slices: Map<String, IntRange> = emptyMap()) : Inner()
         class Hdl(val entity: HdlEntity) : Inner()
     }
 
@@ -521,7 +541,30 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
             addPin(c, true, p, 0, y)
             if (target != null) c.wires.add(Wire(ShapeBuilder.scale(BdfFile.Point(0, y)), ShapeBuilder.scale(target)))
         }
-        for (p in outs) {
+        val slices = (inner as? Inner.Part)?.slices ?: emptyMap()
+        for (p in outs.filter { it.label in slices }) {
+            // a part of an output: connected via a splitter and tunnels
+            val key = innerKey[p.label] ?: continue
+            val source = innerPins[key] ?: continue
+            val y = nextFree()
+            addPin(c, false, p, outX, y)
+            val r = slices[p.label]!!
+            c.add(tunnel("$key[${r.first}..${r.last}]", ShapeBuilder.scale(BdfFile.Point(outX, y))))
+        }
+        for (key in slices.keys.mapNotNull { innerKey[it] }.distinct()) {
+            val source = innerPins[key] ?: continue
+            val ranges = ifc.ports.filter { innerKey[it.label] == key }.mapNotNull { slices[it.label] }.distinct()
+            val width = (inner as Inner.Part).part.getOutput(key.substring(2))?.getWidth(inner.params) ?: continue
+            c.add(tunnel(key, ShapeBuilder.scale(source)))
+            val pos = Vector(0, ShapeBuilder.scale(BdfFile.Point(0, nextFree() + SymbolFactory.STEP)).y / 20 * 20)
+            val sp = ShapeBuilder.createElement(Splitter.DESCRIPTION.name, pos)
+            sp.elementAttributes.set(Keys.INPUT_SPLIT, "$width").set(Keys.OUTPUT_SPLIT, ranges.joinToString(",") { "${it.first}-${it.last}" })
+            c.add(sp)
+            c.add(tunnel(key, pos))
+            ranges.forEachIndexed { i, rg -> c.add(tunnel("$key[${rg.first}..${rg.last}]", pos.add(20, i * 20))) }
+            repeat(ranges.size) { nextFree() }
+        }
+        for (p in outs.filter { it.label !in slices }) {
             val source = innerKey[p.label]?.let { innerPins[it] }
             val y = source?.y ?: nextFree()
             addPin(c, false, p, outX, y)
@@ -539,6 +582,12 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
             }
         }
         return c
+    }
+
+    private fun tunnel(name: String, pos: Vector): VisualElement {
+        val t = ShapeBuilder.createElement(Tunnel.DESCRIPTION.name, pos)
+        t.elementAttributes.set(Keys.NETNAME, name)
+        return t
     }
 
     private fun addPin(c: Circuit, input: Boolean, p: DesignInterface.Port, x: Int, y: Int) {
