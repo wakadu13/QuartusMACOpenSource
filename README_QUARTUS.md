@@ -105,6 +105,28 @@ Les fichiers `.vwf` du projet (`VECTOR_WAVEFORM_FILE` du `.qsf`) ou du dossier d
 sorties enregistrées par une simulation Quartus précédente deviennent les valeurs attendues (les valeurs
 inconnues `X` ne sont pas vérifiées). On lance les tests avec **Simulation → Run all tests** (F11).
 
+## Carte DE0 virtuelle
+
+Si le projet cible la carte **Terasic DE0** (`DEVICE EP3C16F484C6` dans le `.qsf`) et que des broches sont
+affectées (`set_location_assignment PIN_xx -to ...`), l'import crée en plus le circuit `<top>_DE0.dig`,
+ouvert automatiquement. Il contient le schéma de plus haut niveau et le relie, selon les affectations, à :
+
+| Ressource de la carte | Broches | Dans Digital |
+|---|---|---|
+| horloge 50 MHz `CLOCK_50` | `G21` (et `B12`) | horloge à 50 MHz (*Run at real time*, la simulation va aussi vite que possible) |
+| afficheurs `HEX0`…`HEX3` (segments a…g et point, actifs à 0) | `E11`…`F13`/`D13`, `A13`…`A15`/`B15`, `D15`…`F14`/`A18`, `B18`…`G15`/`G16` | afficheurs 7 segments à anode commune |
+| LED vertes `LEDG0`…`LEDG9` | `J1`, `J2`, `J3`, `H1`, `F2`, `E1`, `C1`, `C2`, `B2`, `B1` | LED |
+| interrupteurs `SW0`…`SW9` | `J6`, `H5`, `H6`, `G4`, `G5`, `J7`, `H7`, `E3`, `E4`, `D2` | interrupteurs à cliquer |
+| boutons `BUTTON0`…`BUTTON2` (actifs à 0) | `H2`, `G3`, `F1` | boutons poussoirs |
+
+Les autres broches (connecteurs GPIO vers un circuit imprimé, par exemple `vcomp` sur `PIN_AA17`) deviennent
+des entrées/sorties ordinaires du circuit : on peut les commander à la main pendant la simulation. Le schéma
+importé affiche aussi les cadres `PIN_xx` à côté des broches, comme Quartus.
+
+Remarque : une horloge de 50 MHz ne peut pas être simulée en temps réel. Les signaux lents obtenus par
+division (1 Hz, 5 Hz…) apparaissent donc beaucoup plus lentement qu'en vrai ; pour les tester, on peut
+diminuer temporairement les facteurs de division ou utiliser des cas de test.
+
 ## Export vers Quartus (`.bdf`)
 
 **File → Export → Export to Quartus (bdf)** (ou `CLI quartusExport`) écrit le circuit courant en schéma Quartus :
@@ -151,6 +173,7 @@ Le code Kotlin se trouve dans `src/main/kotlin/de/neemann/digital/quartus` :
 - `QuartusProject` : `.qpf`, `.qsf`, `.qip` ; `HdlEntity` : interface des entités VHDL/modules Verilog ;
 - `BdfConverter` : conversion d'un schéma (réseaux, bus, étiquettes) ; `QuartusImporter` : projet complet ;
 - `MemoryFile` : `.mif`/`.hex` ; `VwfFile` : chronogrammes → cas de test ; `BdfExporter` : export `.bdf` ;
+- `Board` : brochage des cartes (DE0) et création du circuit « carte » ;
 - `ShapeBuilder`, `SymbolFactory`, `QSymbol` et `draw/shapes/QuartusShape` (Java) : rendu à la Quartus ;
 - `lib/` : `QuartusParts` (catalogue), `Primitives`, `Megafunctions`, `Macrofunctions` (modèles de simulation),
   `QuartusNode` (nœud de simulation générique), `Params`.

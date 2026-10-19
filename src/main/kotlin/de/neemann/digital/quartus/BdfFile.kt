@@ -267,7 +267,9 @@ class BdfFile private constructor(private val headerType: String) {
         /** the connection point relative to the rectangle */
         @JvmField val pt: Point,
         @JvmField val drawing: List<Graphic>,
-        @JvmField val transform: String
+        @JvmField val transform: String,
+        /** the box showing the pin location in absolute coordinates, may be null */
+        @JvmField val locationBox: Rect? = null
     ) {
         /** the pins name */
         fun getName(): String = name?.text?.trim() ?: ""
@@ -282,7 +284,8 @@ class BdfFile private constructor(private val headerType: String) {
             internal fun of(n: SExpr): Pin {
                 val texts = n.getChildren("text").map { Text.of(it) }
                 return Pin(readDirection(n), Rect.of(n["rect"]), texts.getOrNull(0), texts.getOrNull(1), texts.getOrNull(2),
-                    n["pt"]?.let { Point.of(it) } ?: Point(0, 0), Graphic.createAll(n["drawing"]), readTransform(n))
+                    n["pt"]?.let { Point.of(it) } ?: Point(0, 0), Graphic.createAll(n["drawing"]), readTransform(n),
+                    n.getChildren("annotation_block").firstOrNull { it.has("location") }?.let { Rect.of(it["rect"]) })
             }
         }
     }

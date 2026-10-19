@@ -457,6 +457,17 @@ internal class BdfConverter(
             .addText(p.typeText, p.rect.x1, p.rect.y1)
             .addText(p.name, p.rect.x1, p.rect.y1)
             .addText(p.defaultValue, p.rect.x1, p.rect.y1)
+        // the pin locations are shown in a box like in Quartus
+        val box = p.locationBox
+        val locs = e.attr.get(Keys.PINNUMBER).split(',').map { it.trim() }.filter { it.isNotEmpty() }
+        if (box != null && locs.isNotEmpty()) {
+            val h = (box.y2 - box.y1) / locs.size
+            locs.forEachIndexed { i, l ->
+                val y = box.y1 + i * h
+                sb.add(BdfFile.Graphic(BdfFile.GraphicType.RECTANGLE, null, null, BdfFile.Rect(box.x1, y, box.x2, y + h), 1, null), 0, 0)
+                sb.addText(BdfFile.Text("PIN_$l", BdfFile.Rect(box.x1 + 3, y + 1, box.x2, y + h - 1), 8), 0, 0)
+            }
+        }
         val t = e.terms[0]
         var elementName = e.elementName
         var key = t.pinKey

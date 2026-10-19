@@ -117,6 +117,35 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
         val ifc = getInterface(top, null, true)
         if (ifc.kind == DesignInterface.Kind.BLACKBOX && ifc.info == SOURCE_NOT_FOUND)
             throw IOException("the top level design '$top' was not found")
+        createBoard(ifc)
+    }
+
+    /** the circuit showing the top level design on the development board, null if there is none */
+    var boardFile: File? = null
+        private set
+
+    /*
+     * If the pins are assigned to the displays, LEDs, switches or buttons of a known board,
+     * a circuit showing the design on this board is created.
+     */
+    private fun createBoard(ifc: DesignInterface) {
+        val board = Board.find(project.device, project.allPinLocations) ?: return
+        val ports = ifc.ports.map { p ->
+            val bn = BusName.parse(p.quartusName)
+            val pins = if (p.bits == 1) listOf(project.getPinLocation(p.quartusName) ?: project.getPinLocation(bn.base))
+            else bn.atoms.reversed().map { project.getPinLocation(it) }
+            BoardCircuitBuilder.Port(p.label, !p.isOutput, p.bits, pins)
+        }
+        if (ports.none { p -> p.pins.any { it != null && board.getResource(it)?.isInput == p.input } }) return
+        val f = File(outDir, ifc.name + "_" + board.name + ".dig")
+        try {
+            val c = BoardCircuitBuilder(board, outDir, getElementName(ifc)).build(ports)
+            c.save(f)
+            createdFiles.add(f)
+            boardFile = f
+        } catch (e: Exception) {
+            warn("the ${board.name} board circuit could not be created: ${e.message}")
+        }
     }
 
     internal fun warn(w: String) {

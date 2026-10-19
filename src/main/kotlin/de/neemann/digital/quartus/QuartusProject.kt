@@ -51,6 +51,9 @@ class QuartusProject(val projectDir: File) {
     /** returns the pin location (like "G21") of the given node or null */
     fun getPinLocation(node: String): String? = pinLocations[node.lowercase()]
 
+    /** all assigned pin locations */
+    val allPinLocations: Collection<String> get() = pinLocations.values
+
     /** reads a settings file (qsf) or an ip file (qip) */
     @Throws(IOException::class)
     fun readSettings(file: File) {

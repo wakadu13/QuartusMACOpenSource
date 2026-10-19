@@ -8,6 +8,7 @@ package de.neemann.digital.quartus;
 import de.neemann.digital.core.Model;
 import de.neemann.digital.core.ObservableValue;
 import de.neemann.digital.core.Signal;
+import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.draw.elements.Circuit;
 import de.neemann.digital.draw.elements.VisualElement;
 import de.neemann.digital.draw.library.ElementLibrary;
@@ -198,6 +199,48 @@ public class QuartusImportTest extends TestCase {
         assertEquals(9, rows);
         Model model = new ModelCreator(circuit, library).createModel(false);
         assertTrue(new TestExecutor(d, model).execute().allPassed());
+    }
+
+    public void testDE0Board() throws Exception {
+        File qpf = new File(Resources.getRoot(), "quartus/de0/de0test.qpf");
+        QuartusImporter imp = QuartusImporter.importFile(qpf, tempDir());
+        assertEquals(imp.getWarnings().toString(), 0, imp.getWarnings().size());
+        assertNotNull(imp.getBoardFile());
+
+        ElementLibrary library = new ElementLibrary();
+        library.setRootFilePath(imp.getBoardFile().getParentFile());
+        Circuit circuit = Circuit.loadCircuit(imp.getBoardFile(), new ShapeFactory(library));
+        int displays = 0;
+        for (VisualElement ve : circuit.getElements())
+            if (ve.getElementName().equals("Seven-Seg"))
+                displays++;
+        assertEquals(4, displays);
+
+        Model m = new ModelCreator(circuit, library).createModel(false);
+        m.init(true);
+        // the pins without a board resource are the pins of the board circuit
+        ObservableValue vcomp = input(m, "vcomp");
+        ObservableValue v = output(m, "v");
+        vcomp.setValue(1);
+        m.doStep();
+        assertEquals(1, v.getValue());
+
+        // the switch SW5 is registered with the 50MHz clock and shown on LEDG0
+        assertEquals(1, m.getClocks().size());
+        assertEquals(50000000, m.getClocks().get(0).getFrequency());
+        clock(m, m.getClocks().get(0).getClockOutput());
+        assertEquals(0, output(m, "LEDG0").getValue());
+        m.close();
+
+        // the switch is turned on before the simulation starts
+        for (VisualElement ve : circuit.getElements())
+            if (ve.getElementName().equals("DipSwitch") && ve.getElementAttributes().getLabel().equals("SW5"))
+                ve.getElementAttributes().set(Keys.DIP_DEFAULT, true);
+        m = new ModelCreator(circuit, library).createModel(false);
+        m.init(true);
+        clock(m, m.getClocks().get(0).getClockOutput());
+        assertEquals(1, output(m, "LEDG0").getValue());
+        m.close();
     }
 
     public void testExportAndImportAgain() throws Exception {

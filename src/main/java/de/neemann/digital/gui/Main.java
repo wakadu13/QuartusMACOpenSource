@@ -1734,7 +1734,8 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             if (QuartusImporter.isQuartusFile(filename)) {
                 // Quartus files are converted to Digital circuits which are then opened
                 QuartusImporter imp = QuartusImporter.importFile(filename);
-                filename = imp.getTopFile();
+                // a design assigned to a development board is shown on the board
+                filename = imp.getBoardFile() != null ? imp.getBoardFile() : imp.getTopFile();
                 if (!imp.getWarnings().isEmpty()) {
                     StringBuilder sb = new StringBuilder(Lang.get("msg_quartusImportWarnings_N", filename.getParent()));
                     int n = 0;
