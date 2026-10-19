@@ -17,7 +17,7 @@ Pour chaque bloc, déposez tous les fichiers qui le décrivent :
 | `.tdf` | bloc AHDL | seule l'interface est lue (AHDL n'est pas simulé) |
 
 Gardez les noms de fichiers d'origine : un bloc est retrouvé par son nom (`div2.bdf` pour le symbole `div2`).
-Les sous-dossiers sont autorisés.
+Placez les fichiers directement dans ce dossier, sans sous-dossiers : l'import ne cherche pas plus profond.
 
 ## Comment déposer les fichiers
 
