@@ -157,5 +157,10 @@ public class EaLibraryTest extends TestCase {
 
         // the sub designs of GenerateurArinc are complete now
         importBlock("GenerateurArinc.bdf").close();
+
+        // the corrected copy of Div7 divides by 7
+        m = importBlock("Div7_corrige.bdf");
+        assertEquals(7, period(m, clockOrInput(m, "E"), output(m, "S"), 60));
+        m.close();
     }
 }

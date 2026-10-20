@@ -28,15 +28,25 @@ ARINC 429, ces portes calculent la parité du mot.
 `OUT = IN1 ⊕ IN2 ⊕ … ⊕ IN8` (7 portes) et `OUT = IN1 ⊕ IN2 ⊕ IN3 ⊕ IN4` (3 portes). La sortie vaut 1 quand
 un nombre impair d'entrées est à 1. Les fichiers ont été générés par un script, puis vérifiés par import.
 
+**Confirmation** : dans `GenerateurArinc`, une entrée d'un `XOR8` est reliée à `VCC` ; avec un OU exclusif, le
+bit 31 du mot est alors la parité **impaire** des 31 autres bits, ce qu'exige la norme ARINC 429. Le mot émis
+en simulation est conforme.
+
 **Vérification** : les 256 combinaisons de `XOR8` et les 16 de `XOR4` donnent la parité attendue ;
 `GenerateurArinc` s'importe sans avertissement.
 
-## Défaut trouvé dans `Div7.bdf` (non corrigé)
+## `Div7_corrige.bdf` et `Div7_corrige.bsf` : copie corrigée de `Div7`
 
-Le fichier original `Div7.bdf` n'a pas été modifié. Il contient un défaut, signalé sur le schéma imprimé
-(« Attention bugg dans le Div7 ») : l'horloge de la bascule `DFF` de sortie est reliée à un fil nommé `H`,
-alors que l'entrée du bloc s'appelle `E`. Aucun autre fil ne s'appelle `H` : la bascule ne reçoit jamais
+Le fichier original `Div7.bdf` est conservé **sans modification**. Il contient un défaut, signalé sur le schéma
+imprimé (« Attention bugg dans le Div7 ») : l'horloge de la bascule `DFF` de sortie est reliée à un fil nommé
+`H`, alors que l'entrée du bloc s'appelle `E`. Aucun autre fil ne s'appelle `H` : la bascule ne reçoit jamais
 d'horloge et la sortie `S` reste à 0, dans Quartus comme ici.
 
-**Correction possible** : renommer le fil `H` en `E` (ou nommer `H` le fil de l'entrée `E`). Avec cette
-correction, `Div7` divise bien par 7 (impulsion d'une période d'horloge toutes les 7 périodes).
+**Construction de la copie** : `Div7.bdf` a été copié en `Div7_corrige.bdf` avec une seule modification :
+le fil `H` est supprimé et l'entrée `CLK` de la bascule est reliée par un fil à l'entrée `E` (point de jonction
+sur le fil d'entrée). Un commentaire en tête du fichier décrit la correction. Le symbole `Div7.bsf` a été copié
+en `Div7_corrige.bsf` avec le nouveau nom.
+
+**Vérification** : `Div7_corrige` s'importe sans avertissement et `S` vaut 1 pendant une période de `E` sur 7.
+
+Dans un projet, il suffit d'utiliser le symbole `Div7_corrige` à la place de `Div7`.
