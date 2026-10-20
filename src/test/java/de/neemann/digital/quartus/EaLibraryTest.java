@@ -242,4 +242,29 @@ public class EaLibraryTest extends TestCase {
         assertEquals(0b0000110, output(m, "u").getValue()); // 3
         m.close();
     }
+
+    public void testHammingDecoder() throws Exception {
+        // Decodeur74 corrects one wrong bit of a Hamming (7,4) code word, it uses XOR4
+        Model m = importBlock("Decodeur74.bdf");
+        ObservableValue c = input(m, "C");
+        for (int d = 0; d < 16; d++) {
+            int c0 = d & 1, c1 = (d >> 1) & 1, c2 = (d >> 2) & 1, c3 = (d >> 3) & 1;
+            int word = d | (c1 ^ c2 ^ c3) << 4 | (c0 ^ c1 ^ c3) << 5 | (c0 ^ c2 ^ c3) << 6;
+            for (int e = -1; e < 7; e++) {
+                c.setValue(e < 0 ? word : word ^ (1 << e));
+                m.doStep();
+                assertEquals(d, output(m, "R").getValue());
+            }
+        }
+        m.close();
+    }
+
+    public void testProjectC3jk() throws Exception {
+        // the project is in the folder projets, the blocks are found in bibliotheque-EA
+        File qpf = new File(LIB, "../projets/C_3_jk/C_3_jk.qpf");
+        QuartusImporter imp = QuartusImporter.importFile(qpf, tempDir());
+        assertEquals(imp.getWarnings().toString(), 0, imp.getWarnings().size());
+        assertNotNull(imp.getBoardFile());
+        createModel(imp.getBoardFile()).close();
+    }
 }

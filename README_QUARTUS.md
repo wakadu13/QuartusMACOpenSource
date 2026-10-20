@@ -52,8 +52,9 @@ java -cp Digital.jar CLI quartusExport -dig MonCircuit.dig [-bdf MonCircuit.bdf]
 | `.qws`, `.gdf`, `.sym` | espace de travail, anciens formats MAX+plus II | ignorés |
 
 Les sous-blocs sont recherchés dans : les fichiers listés dans le projet, le dossier du projet et ses
-sous-dossiers, les `SEARCH_PATH`/`USER_LIBRARIES`, et les dossiers voisins du projet (par exemple
-`../MaBiblio`). Un bloc dont la source est introuvable est importé comme **bloc vide** (sorties à 0) en
+sous-dossiers, les `SEARCH_PATH`/`USER_LIBRARIES`, les dossiers voisins du projet (par exemple
+`../MaBiblio`) et les dossiers voisins du dossier parent (par exemple `../../bibliotheque-EA` pour un projet
+rangé dans `projets/MonProjet`). Un bloc dont la source est introuvable est importé comme **bloc vide** (sorties à 0) en
 gardant son dessin, pour que le schéma reste complet.
 
 ## Simulateur VHDL intégré
@@ -128,6 +129,11 @@ ouvert automatiquement. Il contient le schéma de plus haut niveau et le relie, 
 | LED vertes `LEDG0`…`LEDG9` | `J1`, `J2`, `J3`, `H1`, `F2`, `E1`, `C1`, `C2`, `B2`, `B1` | LED |
 | interrupteurs `SW0`…`SW9` | `J6`, `H5`, `H6`, `G4`, `G5`, `J7`, `H7`, `E3`, `E4`, `D2` | interrupteurs à cliquer |
 | boutons `BUTTON0`…`BUTTON2` (actifs à 0) | `H2`, `G3`, `F1` | boutons poussoirs |
+
+Pour un circuit dessiné dans l'application, indiquez le **Numéro de broche** des entrées/sorties (`J6`, `J1`…),
+enregistrez, puis **Fichier → Afficher sur la carte DE0** : la même carte virtuelle est créée (`<nom>_DE0.dig`).
+L'export vers Quartus crée alors aussi un projet (`.qpf`, `.qsf` pour la DE0) avec ces numéros de broche, si le
+dossier n'en contient pas déjà un.
 
 Les autres broches (connecteurs GPIO vers un circuit imprimé, par exemple `vcomp` sur `PIN_AA17`) deviennent
 des entrées/sorties ordinaires du circuit : on peut les commander à la main pendant la simulation. Le schéma

@@ -280,4 +280,49 @@ public class QuartusImportTest extends TestCase {
             assertTrue(tc.getLabel(), new TestExecutor(d, model).execute().allPassed());
         }
     }
+
+    public void testBoardAndProjectOfDigitalCircuit() throws Exception {
+        // the example of the manual: E1 on SW0 (J6), E2 on SW1 (H5), the result on LEDG0 (J1)
+        File dir = tempDir();
+        File dig = new File(dir, "ouex.dig");
+        ElementLibrary library = new ElementLibrary();
+        library.setRootFilePath(dir);
+        Circuit circuit = Circuit.loadCircuit(new File(Resources.getRoot(), "../../main/dig/combinatorial/Xor1.dig"), new ShapeFactory(library));
+        for (VisualElement ve : circuit.getElements()) {
+            String l = ve.getElementAttributes().getLabel();
+            if (l.equals("A")) ve.getElementAttributes().set(Keys.PINNUMBER, "J6");
+            if (l.equals("B")) ve.getElementAttributes().set(Keys.PINNUMBER, "PIN_H5");
+            if (l.equals("Y")) ve.getElementAttributes().set(Keys.PINNUMBER, "J1");
+        }
+        circuit.save(dig);
+
+        File board = Board.createBoardFor(circuit, dig);
+        assertNotNull(board);
+        library = new ElementLibrary();
+        library.setRootFilePath(dir);
+        Circuit bc = Circuit.loadCircuit(board, new ShapeFactory(library));
+        for (int a = 0; a < 2; a++)
+            for (int b = 0; b < 2; b++) {
+                for (VisualElement ve : bc.getElements())
+                    if (ve.getElementName().equals("DipSwitch")) {
+                        String l = ve.getElementAttributes().getLabel();
+                        if (l.equals("SW0")) ve.getElementAttributes().set(Keys.DIP_DEFAULT, a == 1);
+                        if (l.equals("SW1")) ve.getElementAttributes().set(Keys.DIP_DEFAULT, b == 1);
+                    }
+                Model m = new ModelCreator(bc, library).createModel(false);
+                m.init(true);
+                assertEquals(a ^ b, output(m, "LEDG0").getValue());
+                m.close();
+            }
+
+        // the export creates a Quartus project with the pin assignments
+        BdfExporter exporter = new BdfExporter(library);
+        exporter.export(circuit, new File(dir, "ouex.bdf"));
+        String qsf = new String(Files.readAllBytes(new File(dir, "ouex.qsf").toPath()));
+        assertTrue(qsf, qsf.contains("set_location_assignment PIN_J6 -to A"));
+        assertTrue(qsf, qsf.contains("set_location_assignment PIN_H5 -to B"));
+        assertTrue(qsf, qsf.contains("set_location_assignment PIN_J1 -to Y"));
+        assertTrue(qsf, qsf.contains("DEVICE EP3C16F484C6"));
+        assertTrue(new File(dir, "ouex.qpf").exists());
+    }
 }

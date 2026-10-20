@@ -50,9 +50,36 @@ class BdfExporter(private val library: ElementLibrary) {
     @Throws(IOException::class)
     fun export(circuit: Circuit, file: File) {
         exported.add(QuartusProject.stem(file.name).lowercase())
-        val text = CircuitExport(circuit, QuartusProject.stem(file.name), file.parentFile).create()
-        file.writeText(text, Charsets.ISO_8859_1)
+        val ce = CircuitExport(circuit, QuartusProject.stem(file.name), file.parentFile)
+        file.writeText(ce.create(), Charsets.ISO_8859_1)
         createdFiles.add(file)
+        writeProject(file, ce.pinAssignments)
+    }
+
+    /*
+     * Creates a Quartus project (qpf, qsf) for the DE0 board with the pin numbers of the Digital pins,
+     * so that the design can be compiled and programmed. Existing project files are not changed.
+     */
+    private fun writeProject(bdf: File, pins: List<Pair<String, String>>) {
+        val name = QuartusProject.stem(bdf.name)
+        val qpf = File(bdf.parentFile, "$name.qpf")
+        val qsf = File(bdf.parentFile, "$name.qsf")
+        if (qpf.exists() || qsf.exists()) {
+            if (pins.isNotEmpty()) warn("$name: the existing Quartus project ${qsf.name} is not changed, the pin numbers are not exported")
+            return
+        }
+        qpf.writeText("QUARTUS_VERSION = \"9.0\"\nPROJECT_REVISION = \"$name\"\n", Charsets.ISO_8859_1)
+        val sb = StringBuilder("# Quartus project created by QuartusMACOpenSource (Digital) for the DE0 board\n")
+        sb.append("set_global_assignment -name FAMILY \"Cyclone III\"\n")
+        sb.append("set_global_assignment -name DEVICE EP3C16F484C6\n")
+        sb.append("set_global_assignment -name TOP_LEVEL_ENTITY $name\n")
+        for (f in createdFiles.filter { it.name.endsWith(".bdf") }) sb.append("set_global_assignment -name BDF_FILE ${f.name}\n")
+        for (f in createdFiles.filter { it.name.endsWith(".mif") }) sb.append("set_global_assignment -name MIF_FILE ${f.name}\n")
+        sb.append("set_global_assignment -name STRATIX_DEVICE_IO_STANDARD \"2.5 V\"\n")
+        for ((node, loc) in pins) sb.append("set_location_assignment PIN_$loc -to $node\n")
+        qsf.writeText(sb.toString(), Charsets.ISO_8859_1)
+        createdFiles.add(qpf)
+        createdFiles.add(qsf)
     }
 
     private fun warn(w: String) {
@@ -86,6 +113,9 @@ class BdfExporter(private val library: ElementLibrary) {
         private val netBits = IdentityHashMap<Net, Int>()
         private val namedConnect = HashSet<Net>() // nets which need a label on their wires
         private val usedNames = HashSet<String>()
+
+        /** the pin assignments: node name and location like "J6" */
+        val pinAssignments = ArrayList<Pair<String, String>>()
         private val pinNames = IdentityHashMap<VisualElement, String>()
         private val decoderBus = IdentityHashMap<VisualElement, String>()
         private var netCounter = 0
@@ -382,6 +412,14 @@ class BdfExporter(private val library: ElementLibrary) {
             val bits = bits(n)
             var label = pinLabel
             if (bits > 1 && !label.contains('[')) label = "$label[${bits - 1}..0]"
+            // the pin numbers of a bus are given lsb first
+            val locs = ve.elementAttributes.get(Keys.PINNUMBER).split(',').map { it.trim().uppercase().removePrefix("PIN_") }
+                .filter { it.isNotEmpty() }
+            if (locs.isNotEmpty()) {
+                val base = BusName.parse(label).let { if (it.bits > 1) label.substringBefore('[') else label }
+                if (bits == 1) pinAssignments.add(base to locs[0])
+                else locs.take(bits).forEachIndexed { i, l -> pinAssignments.add("$base[$i]" to l) }
+            }
             if (input) {
                 out.append("(pin\n\t(input)\n\t(rect ${pq.x - 168} ${pq.y - 8} ${pq.x} ${pq.y + 8})\n")
                 out.append("\t(text \"INPUT\" (rect 133 0 161 10)(font \"Arial\" (font_size 6)))\n")

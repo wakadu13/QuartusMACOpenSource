@@ -83,3 +83,24 @@ nbactions.xml
 .project
 .settings
 .vscode
+# Quartus compilation results
+db/
+incremental_db/
+output_files/
+simulation/
+*.cdb
+*.hdb
+*.ddb
+*.rdb
+*.tdb
+*.kpt
+*.logdb
+*.qmsg
+*.summary
+*.rpt
+*.smsg
+*.done
+*.qws
+*.bak
+*.qdf
+*.qarlog

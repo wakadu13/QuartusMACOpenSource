@@ -103,6 +103,36 @@ class Board(
         val ALL = listOf(DE0)
 
         /**
+         * Creates a circuit which shows the given circuit on the DE0 board, using the pin numbers of its
+         * inputs and outputs. The circuit is stored next to the given file as <name>_DE0.dig.
+         *
+         * @param circuit the circuit, it has to be saved in the given file
+         * @param file    the file of the circuit
+         * @return the created file or null if no pin is assigned to a resource of the board
+         */
+        @JvmStatic
+        @Throws(java.io.IOException::class)
+        fun createBoardFor(circuit: Circuit, file: File): File? {
+            val board = DE0
+            val ports = ArrayList<BoardCircuitBuilder.Port>()
+            for (ve in circuit.elements) {
+                val input = ve.elementName == In.DESCRIPTION.name || ve.elementName == Clock.DESCRIPTION.name
+                if (!input && ve.elementName != Out.DESCRIPTION.name) continue
+                val a = ve.elementAttributes
+                val label = a.label ?: continue
+                if (label.isBlank()) continue
+                val bits = if (ve.elementName == Clock.DESCRIPTION.name) 1 else a.bits
+                val locs = a.get(Keys.PINNUMBER).split(',').map { it.trim() }.filter { it.isNotEmpty() }
+                ports.add(BoardCircuitBuilder.Port(label, input, bits, List(bits) { locs.getOrNull(it) }))
+            }
+            if (ports.none { p -> p.pins.any { it != null && board.getResource(it)?.isInput == p.input } }) return null
+            val name = QuartusProject.stem(file.name)
+            val out = File(file.parentFile, "${name}_${board.name}.dig")
+            BoardCircuitBuilder(board, file.parentFile, file.name).build(ports).save(out)
+            return out
+        }
+
+        /**
          * Finds the board of a project: the board using the device of the project
          * or the board most of the assigned pins belong to.
          */

@@ -3004,4 +3004,9 @@ Warnungen:</string>
     <string name="cli_help_quartusExport_dig">Die zu exportierende Schaltung.</string>
     <string name="cli_help_quartusExport_bdf">Die zu erzeugende bdf-Datei. Standard ist der Name der Schaltung mit der Endung bdf.</string>
     <string name="cli_errorExportingQuartus">Fehler beim Export der Schaltung nach Quartus.</string>
+    <!-- DE0 board -->
+    <string name="menu_showOnBoard">Auf dem DE0-Board anzeigen</string>
+    <string name="menu_showOnBoard_tt">Erzeugt eine Schaltung, die diese Schaltung auf einem virtuellen DE0-Board zeigt: die Ein- und Ausgänge werden entsprechend ihrer Pinnummern mit den Siebensegmentanzeigen, LEDs, Schaltern, Tastern und dem 50MHz-Takt verbunden (zum Beispiel J6 für SW0, J1 für LEDG0).</string>
+    <string name="msg_saveBeforeBoard">Bitte speichern Sie die Schaltung zuerst.</string>
+    <string name="err_noPinOnBoard_N">Kein Ein- oder Ausgang hat die Pinnummer einer Komponente des {0}-Boards. Setzen Sie die Pinnummern in den Eigenschaften der Ein- und Ausgänge, zum Beispiel J6 für SW0 oder J1 für LEDG0.</string>
 </resources>

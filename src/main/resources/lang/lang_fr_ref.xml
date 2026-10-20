@@ -2929,4 +2929,9 @@ Warnings:</string>
     <string name="cli_help_quartusExport_dig">The circuit to export.</string>
     <string name="cli_help_quartusExport_bdf">The bdf file to create. Default is the name of the circuit with the extension bdf.</string>
     <string name="cli_errorExportingQuartus">Error exporting the circuit to Quartus.</string>
+    <!-- DE0 board -->
+    <string name="menu_showOnBoard">Show on the DE0 board</string>
+    <string name="menu_showOnBoard_tt">Creates a circuit which shows this circuit on a virtual DE0 board: the inputs and outputs are connected to the seven segment displays, LEDs, switches, buttons and the 50MHz clock according to their pin numbers (for example J6 for SW0, J1 for LEDG0).</string>
+    <string name="msg_saveBeforeBoard">Please save the circuit first.</string>
+    <string name="err_noPinOnBoard_N">No input or output has the pin number of a resource of the {0} board. Set the pin numbers in the properties of the inputs and outputs, for example J6 for SW0 or J1 for LEDG0.</string>
 </resources>

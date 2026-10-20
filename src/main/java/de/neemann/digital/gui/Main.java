@@ -55,6 +55,7 @@ import de.neemann.digital.hdl.verilog2.VerilogGenerator;
 import de.neemann.digital.hdl.vhdl2.VHDLGenerator;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.quartus.BdfExporter;
+import de.neemann.digital.quartus.Board;
 import de.neemann.digital.quartus.QuartusImporter;
 import de.neemann.digital.testing.TestingDataException;
 import de.neemann.digital.toolchain.Configuration;
@@ -695,6 +696,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         file.add(newSubFile.createJMenuItem());
         file.add(open.createJMenuItem());
         file.add(openQuartus.createJMenuItem());
+        file.add(createShowOnBoardAction().createJMenuItem());
         file.add(openRecent);
         file.add(openWin.createJMenuItem());
         file.add(openRecentNewWindow);
@@ -742,6 +744,29 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 );
             }
         }.setToolTip(Lang.get("menu_exportVHDL_tt"));
+    }
+
+    private ToolTipAction createShowOnBoardAction() {
+        return new ToolTipAction(Lang.get("menu_showOnBoard")) {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (filename == null || circuitComponent.isModified()) {
+                    JOptionPane.showMessageDialog(Main.this, Lang.get("msg_saveBeforeBoard"),
+                            Lang.get("menu_showOnBoard"), JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                try {
+                    File board = Board.createBoardFor(circuitComponent.getCircuit(), filename);
+                    if (board == null)
+                        JOptionPane.showMessageDialog(Main.this, Lang.get("err_noPinOnBoard_N", "DE0"),
+                                Lang.get("menu_showOnBoard"), JOptionPane.INFORMATION_MESSAGE);
+                    else
+                        open(board, true);
+                } catch (IOException e) {
+                    new ErrorMessage().addCause(e).show(Main.this);
+                }
+            }
+        }.setToolTip(Lang.get("menu_showOnBoard_tt"));
     }
 
     private ToolTipAction createQuartusExportAction() {

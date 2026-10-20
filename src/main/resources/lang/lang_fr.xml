@@ -3103,4 +3103,9 @@ Avertissements :</string>
     <string name="cli_help_quartusExport_dig">Le circuit à exporter.</string>
     <string name="cli_help_quartusExport_bdf">Le fichier bdf à créer. Par défaut, le nom du circuit avec l'extension bdf.</string>
     <string name="cli_errorExportingQuartus">Erreur lors de l'export du circuit vers Quartus.</string>
+    <!-- DE0 board -->
+    <string name="menu_showOnBoard">Afficher sur la carte DE0</string>
+    <string name="menu_showOnBoard_tt">Crée un circuit qui montre ce circuit sur une carte DE0 virtuelle : les entrées et sorties sont reliées aux afficheurs 7 segments, LED, interrupteurs, boutons et à l'horloge 50 MHz selon leur numéro de broche (par exemple J6 pour SW0, J1 pour LEDG0).</string>
+    <string name="msg_saveBeforeBoard">Enregistrez d'abord le circuit.</string>
+    <string name="err_noPinOnBoard_N">Aucune entrée ou sortie n''a le numéro de broche d''un élément de la carte {0}. Indiquez les numéros de broche dans les propriétés des entrées et sorties, par exemple J6 pour SW0 ou J1 pour LEDG0.</string>
 </resources>

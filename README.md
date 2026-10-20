@@ -5,6 +5,8 @@ circuits logiques de Helmut Neemann, licence GPL v3) capable d'ouvrir, de dessin
 d'Intel/Altera **Quartus** — sans Quartus, et donc aussi sur macOS et Linux.
 
 ➡️ Documentation complète en français : [README_QUARTUS.md](README_QUARTUS.md)
+➡️ Suivre le manuel « Simulation sous Quartus » (TP sur carte DE0) sur Mac : [MANUEL_SIMULATION_MAC.md](MANUEL_SIMULATION_MAC.md)
+➡️ Bibliothèque EA (blocs du cours, vérifiés) : [bibliotheque-EA](bibliotheque-EA/README.md) — projets : [projets](projets)
 
 En bref :
 

@@ -169,8 +169,9 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
         dirs.addAll(project.searchPaths)
         project.designFiles.mapNotNullTo(dirs) { it.parentFile }
         addSubDirs(pd, dirs)
-        // libraries are often stored in sibling folders
+        // libraries are often stored in sibling folders, or next to the folder containing the projects
         pd.parentFile?.let { addSubDirs(it, dirs) }
+        pd.parentFile?.parentFile?.let { addSubDirs(it, dirs) }
         return dirs.toList()
     }
 

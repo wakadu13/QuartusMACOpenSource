@@ -32,6 +32,7 @@ les blocs AHDL créés par le MegaWizard (`lpm_counter`, `lpm_decode`, `lpm_mux`
 | `detect0vers1`, `detect1vers0` | impulsion sur front montant / descendant |
 | `compteur3b`, `decompteurMod16`, `decompteurMod32`, `decode1parmi8`, `mux8par7` | corrects |
 | `Shift8`, `ShiftRight32` | corrects |
+| `Decodeur74` | corrige toutes les erreurs simples d'un code de Hamming (7,4) (128 cas vérifiés) |
 | `DriverAffich8D` | trames série correctes ; son symbole `ShiftRight16` est une ancienne version sans `SerialIn` |
 | `GenerateurArinc` | mot ARINC 429 correct (parité comprise) |
 | `Divideur7`, `XOR8`, `XOR4` | **reconstruits** (absents des fichiers fournis), voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md) |
@@ -164,6 +165,18 @@ déclaration du bloc pour d'autres fichiers AHDL, le `.qip` la liste des fichier
 - **Entrées** `load`, `h`, `SerialIn`, `data[31..0]`. **Sortie** `SerialOut`.
 - Deux `ShiftRight16` en série (`data[31..16]` puis `data[15..0]`) : même fonctionnement sur 32 bits,
   bit 0 en premier.
+
+### Codes correcteurs
+
+#### `Decodeur74` — décodeur de Hamming (7,4)
+- **Entrée** `C[6..0]` : mot de code reçu (`C[3..0]` données, `C[6..4]` bits de contrôle).
+  **Sortie** `R[3..0]` : données corrigées.
+- Trois `XOR4` recalculent les parités (syndrome) : `S1 = C[1] ⊕ C[2] ⊕ C[3] ⊕ C[4]`,
+  `S2 = C[0] ⊕ C[1] ⊕ C[3] ⊕ C[5]`, `S3 = C[0] ⊕ C[2] ⊕ C[3] ⊕ C[6]`. Quatre `AND3` reconnaissent le syndrome qui
+  désigne un bit de donnée faux, et un `XOR` inverse ce bit.
+- Le mot de code correspondant est donc : `C[4] = C[1] ⊕ C[2] ⊕ C[3]`, `C[5] = C[0] ⊕ C[1] ⊕ C[3]`,
+  `C[6] = C[0] ⊕ C[2] ⊕ C[3]`. Vérifié : pour les 16 données, sans erreur et avec une erreur sur chacun des
+  7 bits, `R` redonne la donnée.
 
 ### Portes reconstruites
 
