@@ -1,0 +1,43 @@
+/*
+RECONSTRUCTION - symbol copied from the instance in Afficheur8D.bdf
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 168 80)
+	(text "affich3digit" (rect 26 -1 139 15)(font "Courier New" (font_size 10)(bold)))
+	(text "inst8" (rect 3 68 26 80)(font "Arial" ))
+	(port
+		(pt 0 40)
+		(input)
+		(text "E[11..0]" (rect 20 36 67 48)(font "Courier New" (bold)))
+		(text "E[11..0]" (rect 20 36 67 48)(font "Courier New" (bold)))
+		(line (pt 0 40)(pt 16 40)(line_width 3))
+	)
+	(port
+		(pt 168 24)
+		(output)
+		(text "c[1..7]" (rect 115 20 156 32)(font "Courier New" (bold)))
+		(text "c[1..7]" (rect 115 20 156 32)(font "Courier New" (bold)))
+		(line (pt 152 24)(pt 168 24)(line_width 3))
+	)
+	(port
+		(pt 168 40)
+		(output)
+		(text "d[1..7]" (rect 115 36 156 48)(font "Courier New" (bold)))
+		(text "d[1..7]" (rect 115 36 156 48)(font "Courier New" (bold)))
+		(line (pt 152 40)(pt 168 40)(line_width 3))
+	)
+	(port
+		(pt 168 56)
+		(output)
+		(text "u[1..7]" (rect 115 52 156 64)(font "Courier New" (bold)))
+		(text "u[1..7]" (rect 115 52 156 64)(font "Courier New" (bold)))
+		(line (pt 152 56)(pt 168 56)(line_width 3))
+	)
+	(drawing
+		(line (pt 16 64)(pt 152 64)(line_width 1))
+		(line (pt 16 16)(pt 152 16)(line_width 1))
+		(line (pt 16 64)(pt 16 16)(line_width 1))
+		(line (pt 152 64)(pt 152 16)(line_width 1))
+	)
+)

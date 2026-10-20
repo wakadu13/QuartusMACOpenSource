@@ -35,7 +35,8 @@ les blocs AHDL créés par le MegaWizard (`lpm_counter`, `lpm_decode`, `lpm_mux`
 | `DriverAffich8D` | trames série correctes ; son symbole `ShiftRight16` est une ancienne version sans `SerialIn` |
 | `GenerateurArinc` | mot ARINC 429 correct (parité comprise) |
 | `Divideur7`, `XOR8`, `XOR4` | **reconstruits** (absents des fichiers fournis), voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md) |
-| `Afficheur8D` | incomplet : `comptdecompt12b`, `affich3digit`, `InterfaceBouton` et `DriverAffich4D` manquent |
+| `comptdecompt12b`, `affich3digit`, `InterfaceBouton`, `DriverAffich4D`, `compteurMod4` | **reconstruits** pour `Afficheur8D`, voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md) |
+| `Afficheur8D` | complet avec les blocs reconstruits : compte et décompte avec le bouton rotatif (000 à 999) |
 
 ## Fonctionnement de chaque élément
 
@@ -171,6 +172,29 @@ déclaration du bloc pour d'autres fichiers AHDL, le `.qip` la liste des fichier
 - `OUT` vaut 1 si un nombre **impair** d'entrées est à 1 (calcul de parité), réalisé par un arbre de portes
   `XOR` à 2 entrées.
 
+### Blocs reconstruits pour `Afficheur8D`
+
+#### `comptdecompt12b` — compteur/décompteur décimal à 3 chiffres (reconstruit)
+- **Entrées** `Up/Down` (1 = compter, 0 = décompter), `clk`. **Sortie** `s[11..0]` en BCD :
+  `s[3..0]` unités, `s[7..4]` dizaines, `s[11..8]` centaines.
+- Trois `LPM_COUNTER` modulo 10 en cascade : à chaque ↑ de `clk`, la valeur augmente ou diminue de 1,
+  de 000 à 999 (999 + 1 = 000, 000 − 1 = 999).
+
+#### `affich3digit` — affichage de 3 chiffres (reconstruit)
+- **Entrée** `E[11..0]` (3 chiffres BCD). **Sorties** `c[1..7]`, `d[1..7]`, `u[1..7]` : segments des centaines,
+  dizaines et unités, `[1]` = a … `[7]` = g, **actifs à 0**.
+- Trois décodeurs `DEC_7SEG` de la bibliothèque, un par quartet.
+
+#### `InterfaceBouton` — interface de bouton rotatif (reconstruit)
+- **Entrées** `E1`, `E2` (voies A et B d'un codeur incrémental), `H10k` (horloge d'échantillonnage).
+  **Sorties** `Pulse`, `Sens`.
+- `E1` et `E2` sont échantillonnés sur `H10k` ; `Pulse` vaut 1 pendant une période après chaque front montant de
+  `E1`, `Sens` vaut 1 si `E1` est en avance sur `E2` (rotation dans un sens), 0 sinon.
+
+#### `DriverAffich4D` — pilote série de 4 afficheurs (reconstruit)
+- Mêmes broches que `DriverAffich8D` ; envoie seulement les afficheurs 0 à 3 (`d0`…`d3`), un par milliseconde,
+  grâce au compteur `compteurMod4` (0 à 3, copie de `compteur3b` modulo 4).
+
 ### Pilotes et générateurs
 
 #### `DriverAffich8D` — pilote série de 8 afficheurs 7 segments
@@ -205,15 +229,16 @@ déclaration du bloc pour d'autres fichiers AHDL, le `.qip` la liste des fichier
 
 ### Projet complet
 
-#### `Afficheur8D` — compteur à 3 chiffres (projet incomplet)
+#### `Afficheur8D` — compteur à 3 chiffres commandé par un bouton rotatif
 - Fichiers de projet : `Afficheur8D.qpf`, `Afficheur8D.qsf` (carte DE0, EP3C16F484C6), `Afficheur8D.qws`.
 - **Entrées** `H50Meg`, `E1`, `E2`, `BP`, `BP1`. **Sorties** `u[1..7]`, `d[1..7]`, `c[1..7]` (unités, dizaines,
   centaines en 7 segments), `LED`, `SerialClock`, `SerialData`.
-- `InterfaceBouton` transforme `E1` et `E2` (probablement un codeur rotatif ou deux boutons) en un sens de
-  comptage et une impulsion ; `comptdecompt12b` compte ou décompte sur 12 bits ; `affich3digit` convertit la
-  valeur en 3 chiffres 7 segments, envoyés aussi à un module série par `DriverAffich4D`. `LED` recopie `BP`.
-- **Ne fonctionne pas tel quel** : `comptdecompt12b`, `affich3digit`, `InterfaceBouton` et `DriverAffich4D`
-  ne sont pas dans la bibliothèque (importés comme blocs vides).
+- `InterfaceBouton` transforme les voies `E1`/`E2` du bouton rotatif en un sens de comptage et une impulsion
+  (échantillonnées à 1 kHz) ; `comptdecompt12b` compte ou décompte de 000 à 999 ; `affich3digit` convertit la
+  valeur en 3 chiffres 7 segments (sorties `c`, `d`, `u`), envoyés aussi à un module d'affichage série par
+  `DriverAffich4D`. `LED` recopie `BP` ; `BP1` n'est relié à rien d'utile (son inverseur n'a pas de sortie).
+- Ces quatre blocs étaient absents des fichiers fournis : ils ont été **reconstruits**
+  (voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md)). Mesuré : 3 crans dans un sens et 1 dans l'autre affichent 002.
 
 ### Autres fichiers
 
@@ -226,6 +251,7 @@ déclaration du bloc pour d'autres fichiers AHDL, le `.qip` la liste des fichier
 | `CLK_DIV.SYM`, `DEBOUNCE.SYM`, `DEC_7SEG.SYM` | anciens symboles MAX+plus II des blocs VHDL (non utilisés) |
 | `PinPlaner.xls` | affectation des broches de la DE0 : afficheurs `HEX0` à `HEX3` (Unités, Dizaines, Centaines, Milliers) et leurs points, LED `Led0` à `Led9`, interrupteurs `SW0` à `SW9`, boutons `BP0` à `BP2`, horloge 50 MHz (`G21`) |
 | `RECONSTRUCTIONS.md` | comment les blocs manquants ont été recréés et `Div7` corrigé |
+| `outils/reconstruction.py` | script qui génère les blocs reconstruits (trace de leur construction) |
 
 ## Ajouter des fichiers
 

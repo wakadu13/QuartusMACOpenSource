@@ -1,0 +1,36 @@
+/*
+RECONSTRUCTION - symbol copied from the instance in Afficheur8D.bdf
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 168 64)
+	(text "comptdecompt12b" (rect 11 -1 152 15)(font "Courier New" (font_size 10)(bold)))
+	(text "inst7" (rect 3 52 26 64)(font "Arial" ))
+	(port
+		(pt 0 24)
+		(input)
+		(text "Up/Down" (rect 20 20 61 32)(font "Courier New" (bold)))
+		(text "Up/Down" (rect 20 20 61 32)(font "Courier New" (bold)))
+		(line (pt 0 24)(pt 16 24)(line_width 1))
+	)
+	(port
+		(pt 0 40)
+		(input)
+		(text "clk" (rect 20 36 37 48)(font "Courier New" (bold)))
+		(text "clk" (rect 20 36 37 48)(font "Courier New" (bold)))
+		(line (pt 0 40)(pt 16 40)(line_width 1))
+	)
+	(port
+		(pt 168 24)
+		(output)
+		(text "s[11..0]" (rect 110 20 157 32)(font "Courier New" (bold)))
+		(text "s[11..0]" (rect 110 20 157 32)(font "Courier New" (bold)))
+		(line (pt 152 24)(pt 168 24)(line_width 3))
+	)
+	(drawing
+		(line (pt 16 48)(pt 152 48)(line_width 1))
+		(line (pt 16 16)(pt 152 16)(line_width 1))
+		(line (pt 16 48)(pt 16 16)(line_width 1))
+		(line (pt 152 48)(pt 152 16)(line_width 1))
+	)
+)

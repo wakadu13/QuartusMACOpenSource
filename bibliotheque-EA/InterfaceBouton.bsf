@@ -1,0 +1,47 @@
+/*
+RECONSTRUCTION - symbol copied from the instance in Afficheur8D.bdf
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 112 96)
+	(text "InterfaceBouton" (rect 5 0 95 14)(font "Arial" (font_size 8)))
+	(text "inst2" (rect 8 80 31 92)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "E1" (rect 0 0 14 14)(font "Arial" (font_size 8)))
+		(text "E1" (rect 21 27 35 41)(font "Arial" (font_size 8)))
+		(line (pt 0 32)(pt 16 32)(line_width 1))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "E2" (rect 0 0 14 14)(font "Arial" (font_size 8)))
+		(text "E2" (rect 21 43 35 57)(font "Arial" (font_size 8)))
+		(line (pt 0 48)(pt 16 48)(line_width 1))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "H10k" (rect 0 0 28 14)(font "Arial" (font_size 8)))
+		(text "H10k" (rect 21 59 49 73)(font "Arial" (font_size 8)))
+		(line (pt 0 64)(pt 16 64)(line_width 1))
+	)
+	(port
+		(pt 112 32)
+		(output)
+		(text "Sens" (rect 0 0 29 14)(font "Arial" (font_size 8)))
+		(text "Sens" (rect 62 27 91 41)(font "Arial" (font_size 8)))
+		(line (pt 112 32)(pt 96 32)(line_width 1))
+	)
+	(port
+		(pt 112 48)
+		(output)
+		(text "Pulse" (rect 0 0 30 14)(font "Arial" (font_size 8)))
+		(text "Pulse" (rect 61 43 91 57)(font "Arial" (font_size 8)))
+		(line (pt 112 48)(pt 96 48)(line_width 1))
+	)
+	(drawing
+		(rectangle (rect 16 16 96 80)(line_width 1))
+	)
+)

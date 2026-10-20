@@ -163,4 +163,83 @@ public class EaLibraryTest extends TestCase {
         assertEquals(7, period(m, clockOrInput(m, "E"), output(m, "S"), 60));
         m.close();
     }
+
+    public void testRebuiltBlocksOfAfficheur8D() throws Exception {
+        // comptdecompt12b: three digit BCD up/down counter
+        Model m = importBlock("comptdecompt12b.bdf");
+        ObservableValue clk = clockOrInput(m, "clk");
+        ObservableValue up = input(m, "Up/Down");
+        ObservableValue s = output(m, "s");
+        up.setValue(1);
+        m.doStep();
+        for (int i = 1; i <= 1002; i++) {
+            clock(m, clk);
+            assertEquals(Long.parseLong(Integer.toString(i % 1000), 16), s.getValue());
+        }
+        up.setValue(0);
+        m.doStep();
+        for (int i = 1001; i >= 995; i--) {
+            clock(m, clk);
+            assertEquals(Long.parseLong(Integer.toString(i % 1000), 16), s.getValue());
+        }
+        m.close();
+
+        // affich3digit: the digits of a BCD value, segments a..g active low ([1] = a is the msb)
+        m = importBlock("affich3digit.bdf");
+        input(m, "E").setValue(0x857);
+        m.doStep();
+        assertEquals(0b0000000, output(m, "c").getValue()); // 8
+        assertEquals(0b0100100, output(m, "d").getValue()); // 5
+        assertEquals(0b0001111, output(m, "u").getValue()); // 7
+        m.close();
+
+        // InterfaceBouton: a pulse per cycle of the encoder, the direction from the phase of E2
+        m = importBlock("InterfaceBouton.bdf");
+        ObservableValue h = clockOrInput(m, "H10k");
+        int[][] forward = {{1, 0}, {1, 1}, {0, 1}, {0, 0}};
+        int[][] backward = {{0, 1}, {1, 1}, {1, 0}, {0, 0}};
+        for (int dir = 0; dir < 2; dir++) {
+            int pulses = 0;
+            long last = 0;
+            for (int n = 0; n < 2; n++)
+                for (int[] st : dir == 0 ? forward : backward) {
+                    input(m, "E1").setValue(st[0]);
+                    input(m, "E2").setValue(st[1]);
+                    m.doStep();
+                    for (int k = 0; k < 3; k++) {
+                        clock(m, h);
+                        long p = output(m, "Pulse").getValue();
+                        if (p == 1 && last == 0) {
+                            pulses++;
+                            assertEquals(dir == 0 ? 1 : 0, output(m, "Sens").getValue());
+                        }
+                        last = p;
+                    }
+                }
+            assertEquals(2, pulses);
+        }
+        m.close();
+    }
+
+    public void testAfficheur8DComplete() throws Exception {
+        QuartusImporter imp = QuartusImporter.importFile(new File(LIB, "Afficheur8D.qpf"), tempDir());
+        // only the outdated symbol of ShiftRight16 in the copy of DriverAffich8D remains
+        assertEquals(imp.getWarnings().toString(), 1, imp.getWarnings().size());
+        Model m = createModel(imp.getTopFile());
+        ObservableValue clk = m.getClocks().get(0).getClockOutput();
+        int[][] forward = {{1, 0}, {1, 1}, {0, 1}, {0, 0}};
+        for (int n = 0; n < 3; n++)
+            for (int[] st : forward) {
+                input(m, "E1").setValue(st[0]);
+                input(m, "E2").setValue(st[1]);
+                m.doStep();
+                // the encoder is sampled at 1 kHz: 1.2 ms per state
+                for (int i = 0; i < 60000; i++)
+                    clock(m, clk);
+            }
+        assertEquals(0b0000001, output(m, "c").getValue()); // 0
+        assertEquals(0b0000001, output(m, "d").getValue()); // 0
+        assertEquals(0b0000110, output(m, "u").getValue()); // 3
+        m.close();
+    }
 }
