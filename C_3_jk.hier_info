@@ -1,0 +1,95 @@
+|C_3_jk
+a <= DEC_7SEG:inst3.segment_a
+H50M => Clock_Div:inst5.50MHz
+b <= DEC_7SEG:inst3.segment_b
+c <= DEC_7SEG:inst3.segment_c
+d <= DEC_7SEG:inst3.segment_d
+e <= DEC_7SEG:inst3.segment_e
+f <= DEC_7SEG:inst3.segment_f
+g <= DEC_7SEG:inst3.segment_g
+z_BPclear => ~NO_FANOUT~
+
+
+|C_3_jk|DEC_7SEG:inst3
+hex_digit[0] => Mux6.IN19
+hex_digit[0] => Mux5.IN19
+hex_digit[0] => Mux4.IN19
+hex_digit[0] => Mux3.IN19
+hex_digit[0] => Mux2.IN19
+hex_digit[0] => Mux1.IN19
+hex_digit[0] => Mux0.IN19
+hex_digit[1] => Mux6.IN18
+hex_digit[1] => Mux5.IN18
+hex_digit[1] => Mux4.IN18
+hex_digit[1] => Mux3.IN18
+hex_digit[1] => Mux2.IN18
+hex_digit[1] => Mux1.IN18
+hex_digit[1] => Mux0.IN18
+hex_digit[2] => Mux6.IN17
+hex_digit[2] => Mux5.IN17
+hex_digit[2] => Mux4.IN17
+hex_digit[2] => Mux3.IN17
+hex_digit[2] => Mux2.IN17
+hex_digit[2] => Mux1.IN17
+hex_digit[2] => Mux0.IN17
+hex_digit[3] => Mux6.IN16
+hex_digit[3] => Mux5.IN16
+hex_digit[3] => Mux4.IN16
+hex_digit[3] => Mux3.IN16
+hex_digit[3] => Mux2.IN16
+hex_digit[3] => Mux1.IN16
+hex_digit[3] => Mux0.IN16
+segment_a <= Mux0.DB_MAX_OUTPUT_PORT_TYPE
+segment_b <= Mux1.DB_MAX_OUTPUT_PORT_TYPE
+segment_c <= Mux2.DB_MAX_OUTPUT_PORT_TYPE
+segment_d <= Mux3.DB_MAX_OUTPUT_PORT_TYPE
+segment_e <= Mux4.DB_MAX_OUTPUT_PORT_TYPE
+segment_f <= Mux5.DB_MAX_OUTPUT_PORT_TYPE
+segment_g <= Mux6.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|C_3_jk|Clock_Div:inst5
+1MHz <= CLK_DIV:inst.clock_1MHz
+50MHz => div2:inst3.E
+100KHz <= CLK_DIV:inst.clock_100KHz
+10KHz <= CLK_DIV:inst.clock_10KHz
+1KHz <= CLK_DIV:inst.clock_1KHz
+100Hz <= CLK_DIV:inst.clock_100Hz
+10Hz <= CLK_DIV:inst.clock_10Hz
+1Hz <= CLK_DIV:inst.clock_1Hz
+5Hz <= div2:inst4.S
+
+
+|C_3_jk|Clock_Div:inst5|CLK_DIV:inst
+clock_25Mhz => count_1Mhz[4].CLK
+clock_25Mhz => count_1Mhz[3].CLK
+clock_25Mhz => count_1Mhz[2].CLK
+clock_25Mhz => count_1Mhz[1].CLK
+clock_25Mhz => count_1Mhz[0].CLK
+clock_25Mhz => clock_1Mhz_int.CLK
+clock_25Mhz => clock_1MHz~reg0.CLK
+clock_25Mhz => clock_100KHz~reg0.CLK
+clock_25Mhz => clock_10KHz~reg0.CLK
+clock_25Mhz => clock_1KHz~reg0.CLK
+clock_25Mhz => clock_100Hz~reg0.CLK
+clock_25Mhz => clock_10Hz~reg0.CLK
+clock_25Mhz => clock_1Hz~reg0.CLK
+clock_1MHz <= clock_1MHz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_100KHz <= clock_100KHz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_10KHz <= clock_10KHz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_1KHz <= clock_1KHz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_100Hz <= clock_100Hz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_10Hz <= clock_10Hz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+clock_1Hz <= clock_1Hz~reg0.DB_MAX_OUTPUT_PORT_TYPE
+
+
+|C_3_jk|Clock_Div:inst5|div2:inst3
+S <= 2.DB_MAX_OUTPUT_PORT_TYPE
+E => 2.CLK
+
+
+|C_3_jk|Clock_Div:inst5|div2:inst4
+S <= 2.DB_MAX_OUTPUT_PORT_TYPE
+E => 2.CLK
+
+

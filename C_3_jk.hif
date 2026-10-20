@@ -1,0 +1,337 @@
+Version 9.0 Build 132 02/25/2009 SJ Web Edition
+10
+767
+OFF
+OFF
+OFF
+ON
+ON
+ON
+FV_OFF
+Level2
+0
+0
+VRSM_ON
+VHSM_ON
+0
+-- Start Library Paths --
+-- End Library Paths --
+-- Start VHDL Libraries --
+-- End VHDL Libraries --
+# entity
+DEC_7SEG
+# storage
+db|C_3_jk.(1).cnf
+db|C_3_jk.(1).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|..|..|downloads|arinc21|soufiane zekri_14479_assignsubmission_file_|enum_projet_crc_dql_pya_zkr|enum_projet|gestion_bouton_rotatif|DEC_7SEG.vhd
+102da7478751c8e6798851bf76aa54db
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+Clock_Div
+# storage
+db|C_3_jk.(2).cnf
+db|C_3_jk.(2).cnf
+# case_insensitive
+# source_file
+..|..|..|downloads|arinc21|soufiane zekri_14479_assignsubmission_file_|enum_projet_crc_dql_pya_zkr|enum_projet|gestion_bouton_rotatif|Clock_Div.bdf
+6a3d53a05ea970a98e7995d271b91c
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# macro_sequence
+
+# end
+# entity
+CLK_DIV
+# storage
+db|C_3_jk.(3).cnf
+db|C_3_jk.(3).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|..|..|downloads|arinc21|soufiane zekri_14479_assignsubmission_file_|enum_projet_crc_dql_pya_zkr|enum_projet|gestion_bouton_rotatif|CLK_DIV.vhd
+ea67f32df239e4434b72c8bf8ccf78d
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+div2
+# storage
+db|C_3_jk.(4).cnf
+db|C_3_jk.(4).cnf
+# case_insensitive
+# source_file
+..|..|..|downloads|arinc21|soufiane zekri_14479_assignsubmission_file_|enum_projet_crc_dql_pya_zkr|enum_projet|gestion_bouton_rotatif|div2.bdf
+a8274ec5f9a9b2815d4e1d1f7de81
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# macro_sequence
+
+# end
+# entity
+DEC_7SEG
+# storage
+db|C_3_jk.(5).cnf
+db|C_3_jk.(5).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|biblioquartusea|biblioquartusea|DEC_7SEG.vhd
+102da7478751c8e6798851bf76aa54db
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+Clock_Div
+# storage
+db|C_3_jk.(6).cnf
+db|C_3_jk.(6).cnf
+# case_insensitive
+# source_file
+..|biblioquartusea|biblioquartusea|Clock_Div.bdf
+6a3d53a05ea970a98e7995d271b91c
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# macro_sequence
+
+# end
+# entity
+CLK_DIV
+# storage
+db|C_3_jk.(7).cnf
+db|C_3_jk.(7).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|biblioquartusea|biblioquartusea|CLK_DIV.vhd
+ea67f32df239e4434b72c8bf8ccf78d
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+div2
+# storage
+db|C_3_jk.(8).cnf
+db|C_3_jk.(8).cnf
+# case_insensitive
+# source_file
+..|biblioquartusea|biblioquartusea|div2.bdf
+a8274ec5f9a9b2815d4e1d1f7de81
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# macro_sequence
+
+# end
+# entity
+DEC_7SEG
+# storage
+db|C_3_jk.(9).cnf
+db|C_3_jk.(9).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|mabiblio|DEC_7SEG.vhd
+102da7478751c8e6798851bf76aa54db
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# hierarchies {
+dec_7seg:inst3
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+Clock_Div
+# storage
+db|C_3_jk.(10).cnf
+db|C_3_jk.(10).cnf
+# case_insensitive
+# source_file
+..|mabiblio|Clock_Div.bdf
+8dee70f1b44bb17677b1c8c7276d054
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# hierarchies {
+Clock_Div:inst5
+}
+# macro_sequence
+
+# end
+# entity
+CLK_DIV
+# storage
+db|C_3_jk.(11).cnf
+db|C_3_jk.(11).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_insensitive
+# source_file
+..|mabiblio|CLK_DIV.vhd
+ea67f32df239e4434b72c8bf8ccf78d
+5
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+}
+# hierarchies {
+Clock_Div:inst5|clk_div:inst
+}
+# lmf
+..|..|..|..|..|altera|90|quartus|lmf|maxplus2.lmf
+9a59d39b0706640b4b2718e8a1ff1f
+# macro_sequence
+
+# end
+# entity
+div2
+# storage
+db|C_3_jk.(12).cnf
+db|C_3_jk.(12).cnf
+# case_insensitive
+# source_file
+..|mabiblio|div2.bdf
+a8274ec5f9a9b2815d4e1d1f7de81
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# hierarchies {
+Clock_Div:inst5|div2:inst3
+Clock_Div:inst5|div2:inst4
+}
+# macro_sequence
+
+# end
+# entity
+C_3_jk
+# storage
+db|C_3_jk.(0).cnf
+db|C_3_jk.(0).cnf
+# case_insensitive
+# source_file
+C_3_jk.bdf
+711f21f44f94f725c566b138cdb764
+26
+# internal_option {
+BLOCK_DESIGN_NAMING
+AUTO
+}
+# hierarchies {
+|
+}
+# macro_sequence
+
+# end
+# complete
+
