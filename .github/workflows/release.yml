@@ -1,0 +1,164 @@
+# Builds the application for macOS (Apple Silicon), Windows and Linux and publishes a GitHub release.
+#
+# Start it by pushing a tag:   git tag v1.0.0 && git push origin v1.0.0
+# or from the "Actions" tab (Release → Run workflow) by giving the version number.
+#
+# Each package bundles its own Java runtime (jpackage), so nothing has to be installed beforehand.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (for example 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: DigitalQuartus
+  MAIN_CLASS: de.neemann.digital.gui.Main
+  # Java modules used by the application (jdeps) plus a few loaded by reflection; keeps the bundled runtime small.
+  MODULES: java.base,java.desktop,java.prefs,java.sql,java.logging,java.xml,java.naming,java.scripting,java.management,jdk.unsupported,jdk.charsets,jdk.localedata,jdk.crypto.ec,jdk.zipfs,jdk.accessibility
+  JLINK_OPTIONS: --strip-debug --no-man-pages --no-header-files --strip-native-commands --compress=zip-6
+
+jobs:
+  jar:
+    name: Build Digital.jar
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then V="${{ inputs.version }}"; else V="${GITHUB_REF_NAME#v}"; fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build and test
+        run: mvn -B -P no-git-rev "-Dgit.commit.id.describe=v${{ steps.version.outputs.version }}" package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: jar
+          path: target/Digital.jar
+
+  package:
+    name: Package ${{ matrix.label }}
+    needs: jar
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            label: macOS-arm64
+          - os: windows-2022
+            label: Windows-x64
+          - os: ubuntu-22.04
+            label: Linux-x64
+    runs-on: ${{ matrix.os }}
+    env:
+      VERSION: ${{ needs.jar.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar
+          path: input
+
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          jpackage --type dmg --name "$APP_NAME" --app-version "$VERSION" \
+            --input input --main-jar Digital.jar --main-class "$MAIN_CLASS" \
+            --add-modules "$MODULES" --jlink-options "$JLINK_OPTIONS" \
+            --icon packaging/icons/icon.icns --vendor QuartusMACOpenSource \
+            --description "Digital logic simulator compatible with Quartus files" \
+            --mac-package-identifier org.quartusmacopensource.digital --mac-package-name "$APP_NAME" \
+            --dest dist
+          mkdir out
+          mv dist/*.dmg "out/${APP_NAME}-${VERSION}-macOS-arm64.dmg"
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          COMMON=(--name "$APP_NAME" --app-version "$VERSION" --input input --main-jar Digital.jar
+                  --main-class "$MAIN_CLASS" --add-modules "$MODULES" --jlink-options "$JLINK_OPTIONS"
+                  --icon packaging/icons/icon.ico --vendor QuartusMACOpenSource
+                  --description "Digital logic simulator compatible with Quartus files")
+          mkdir out
+          jpackage --type msi "${COMMON[@]}" --win-menu --win-menu-group "$APP_NAME" --win-shortcut \
+            --win-dir-chooser --win-per-user-install --win-upgrade-uuid 6f0b2c64-5d43-4a52-9a52-1f1d7c0a5e31 --dest dist
+          mv dist/*.msi "out/${APP_NAME}-${VERSION}-Windows-x64.msi"
+          jpackage --type app-image "${COMMON[@]}" --dest image
+          (cd image && 7z a -tzip "../out/${APP_NAME}-${VERSION}-Windows-x64-portable.zip" "$APP_NAME" > /dev/null)
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get install -y fakeroot > /dev/null
+          COMMON=(--name "$APP_NAME" --app-version "$VERSION" --input input --main-jar Digital.jar
+                  --main-class "$MAIN_CLASS" --add-modules "$MODULES" --jlink-options "$JLINK_OPTIONS"
+                  --icon packaging/icons/icon.png --vendor QuartusMACOpenSource
+                  --description "Digital logic simulator compatible with Quartus files")
+          mkdir out
+          jpackage --type deb "${COMMON[@]}" --linux-package-name digitalquartus --linux-shortcut \
+            --linux-menu-group Education --linux-app-category education \
+            --linux-deb-maintainer noreply@github.com --dest dist
+          mv dist/*.deb "out/${APP_NAME}-${VERSION}-Linux-x64.deb"
+          jpackage --type app-image "${COMMON[@]}" --dest image
+          tar -C image -czf "out/${APP_NAME}-${VERSION}-Linux-x64.tar.gz" "$APP_NAME"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          path: out/*
+
+  release:
+    name: Publish release
+    needs: [jar, package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect files
+        run: |
+          mkdir upload
+          cp artifacts/macOS-arm64/* artifacts/Windows-x64/* artifacts/Linux-x64/* upload/
+          cp artifacts/jar/Digital.jar "upload/${APP_NAME}-${{ needs.jar.outputs.version }}.jar"
+          ls -l upload
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.jar.outputs.version }}
+          name: ${{ env.APP_NAME }} ${{ needs.jar.outputs.version }}
+          body_path: packaging/RELEASE_NOTES.md
+          target_commitish: ${{ github.sha }}
+          files: upload/*
