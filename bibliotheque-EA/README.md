@@ -42,6 +42,7 @@ Copiez donc ce dossier à côté de vos projets (par exemple `MesProjets/bibliot
 | `compteur3b`, `decompteurMod16`, `decompteurMod32`, `decode1parmi8`, `mux8par7` (AHDL MegaWizard) | simulés nativement |
 | `Shift8`, `ShiftRight32` | registres à décalage corrects |
 | `DriverAffich8D` | s'importe ; son symbole `ShiftRight16` n'a pas l'entrée `SerialIn` (ancienne version) |
-| `Div7` | ne fonctionne pas : le bloc `Divideur7` manque |
-| `GenerateurArinc` | incomplet : les blocs `XOR8` et `XOR4` manquent |
+| `Divideur7`, `XOR8`, `XOR4` | **reconstruits** (blocs manquants), voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md) |
+| `Div7` | sa bascule de sortie n'a pas d'horloge (fil `H` non relié à `E`), la sortie reste à 0 ; voir [RECONSTRUCTIONS.md](RECONSTRUCTIONS.md) |
+| `GenerateurArinc` | s'importe sans avertissement avec `XOR8` et `XOR4` reconstruits |
 | `Afficheur8D` | incomplet : `comptdecompt12b`, `affich3digit`, `InterfaceBouton` et `DriverAffich4D` manquent |

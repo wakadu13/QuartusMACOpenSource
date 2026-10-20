@@ -1,0 +1,32 @@
+-- RECONSTRUCTION - this file is NOT the original Divideur7 of the EA library.
+-- It was rebuilt on 2026-10-20 from the symbol "Divideur7" found in Div7.bdf
+-- (ports clock, q[2..0], cout) in the style of the other counters of the
+-- library (compteur3b.tdf, decompteurMod16.tdf), which were created by the
+-- MegaWizard: a lpm_counter counting up modulo 7 (q = 0..6, cout = 1 when q = 6).
+-- See RECONSTRUCTIONS.md for details.
+
+INCLUDE "lpm_counter.inc";
+
+SUBDESIGN Divideur7
+(
+	clock	 : INPUT;
+	cout	 : OUTPUT;
+	q[2..0]	 : OUTPUT;
+)
+
+VARIABLE
+
+	lpm_counter_component : lpm_counter WITH (
+			LPM_DIRECTION = "UP",
+			LPM_MODULUS = 7,
+			LPM_PORT_UPDOWN = "PORT_UNUSED",
+			LPM_TYPE = "LPM_COUNTER",
+			LPM_WIDTH = 3
+			);
+
+BEGIN
+
+	cout = lpm_counter_component.cout;
+	q[2..0] = lpm_counter_component.q[2..0];
+	lpm_counter_component.clock = clock;
+END;

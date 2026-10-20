@@ -131,4 +131,31 @@ public class EaLibraryTest extends TestCase {
         }
         m.close();
     }
+
+    public void testReconstructedBlocks() throws Exception {
+        // XOR8 and XOR4 compute the parity of their inputs
+        for (int n : new int[]{4, 8}) {
+            Model m = importBlock("XOR" + n + ".bdf");
+            for (int v = 0; v < (1 << n); v++) {
+                for (int k = 0; k < n; k++)
+                    input(m, "IN" + (k + 1)).setValue((v >> k) & 1);
+                m.doStep();
+                assertEquals(Integer.bitCount(v) & 1, output(m, "OUT").getValue());
+            }
+            m.close();
+        }
+
+        // Divideur7 counts modulo 7
+        Model m = importBlock("Divideur7.tdf");
+        ObservableValue clk = input(m, "clock");
+        for (int i = 1; i <= 20; i++) {
+            clock(m, clk);
+            assertEquals(i % 7, output(m, "q").getValue());
+            assertEquals(i % 7 == 6 ? 1 : 0, output(m, "cout").getValue());
+        }
+        m.close();
+
+        // the sub designs of GenerateurArinc are complete now
+        importBlock("GenerateurArinc.bdf").close();
+    }
 }
