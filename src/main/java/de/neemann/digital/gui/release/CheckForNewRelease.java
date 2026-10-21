@@ -21,7 +21,7 @@ public final class CheckForNewRelease {
     private static final long ADAY = 24L * 60 * 60 * 1000;
     private static final String PREF_LAST = "last";
     private static final String PREF_ASKED = "asked";
-    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("rev");
+    private static final Preferences PREFS = Preferences.userRoot().node("dig").node("quartusRev");
 
     private CheckForNewRelease() {
     }
@@ -54,7 +54,7 @@ public final class CheckForNewRelease {
 
                     PREFS.put(PREF_ASKED, latestRev);
 
-                    if (runningRev.equals(latestRev))
+                    if (!ReleaseInfo.isNewer(latestRev, runningRev))
                         return;
 
                     SwingUtilities.invokeLater(() -> anInterface.showMessage(latestRev));

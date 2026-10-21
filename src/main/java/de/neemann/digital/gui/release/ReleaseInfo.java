@@ -13,14 +13,16 @@ import org.json.JSONTokener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.prefs.Preferences;
 
 /**
  * Checks for new releases
  */
 public final class ReleaseInfo {
-    private static final String RELEASE_URL = "https://api.github.com/repos/hneemann/Digital/releases/latest";
-    private static final String RELEASE_URL_NEW = "https://api.github.com/repos/hneemann/DigitaSi/releases/latest";
+    /**
+     * The GitHub project this version is released from
+     */
+    public static final String GITHUB_PROJECT = "wakadu13/QuartusMACOpenSource";
+    private static final String RELEASE_URL = "https://api.github.com/repos/" + GITHUB_PROJECT + "/releases/latest";
 
     private String version;
     private String url;
@@ -31,12 +33,7 @@ public final class ReleaseInfo {
      * @throws IOException IOException
      */
     ReleaseInfo() throws IOException {
-        try {
-            readReleaseInfo(RELEASE_URL_NEW);
-            Preferences.userRoot().node("dig").put("newname", "DigitaSi");
-        } catch (IOException e) {
-            readReleaseInfo(RELEASE_URL);
-        }
+        readReleaseInfo(RELEASE_URL);
     }
 
     private void readReleaseInfo(String releaseUrl) throws IOException {
@@ -63,6 +60,42 @@ public final class ReleaseInfo {
      */
     public String getUrl() {
         return url;
+    }
+
+    /**
+     * Compares two version names like "v1.2.3".
+     *
+     * @param latest  the latest released version
+     * @param running the running version
+     * @return true if latest is newer than running
+     */
+    public static boolean isNewer(String latest, String running) {
+        int[] l = parse(latest);
+        int[] r = parse(running);
+        if (l == null || r == null)
+            return !latest.equals(running);
+        for (int i = 0; i < Math.max(l.length, r.length); i++) {
+            int a = i < l.length ? l[i] : 0;
+            int b = i < r.length ? r[i] : 0;
+            if (a != b)
+                return a > b;
+        }
+        return false;
+    }
+
+    private static int[] parse(String version) {
+        String v = version.trim();
+        if (v.startsWith("v") || v.startsWith("V"))
+            v = v.substring(1);
+        String[] parts = v.split("\\.");
+        int[] n = new int[parts.length];
+        try {
+            for (int i = 0; i < parts.length; i++)
+                n[i] = Integer.parseInt(parts[i]);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        return n;
     }
 
 }

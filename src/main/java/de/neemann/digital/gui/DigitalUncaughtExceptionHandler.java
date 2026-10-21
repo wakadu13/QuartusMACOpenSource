@@ -5,6 +5,7 @@
  */
 package de.neemann.digital.gui;
 
+import de.neemann.digital.gui.release.ReleaseInfo;
 import de.neemann.gui.InfoDialog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +41,9 @@ public class DigitalUncaughtExceptionHandler implements Thread.UncaughtException
     private void writeLog(BufferedWriter w, Thread thread, Throwable throwable) throws IOException {
         w.write("This file was created because there was an unexpected exception in Digital.");
         w.newLine();
-        w.write("Please send this file to digital-simulator@web.de or create an issue at");
+        w.write("Please create an issue with this file at");
         w.newLine();
-        w.write("GitHub: https://github.com/hneemann/Digital/issues");
+        w.write("GitHub: https://github.com/" + ReleaseInfo.GITHUB_PROJECT + "/issues");
         w.newLine();
         w.newLine();
         w.write("Manifest: ");

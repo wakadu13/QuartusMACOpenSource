@@ -104,3 +104,6 @@ simulation/
 *.bak
 *.qdf
 *.qarlog
+
+# local agent worktrees
+.claude/

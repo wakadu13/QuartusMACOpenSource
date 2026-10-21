@@ -26,6 +26,8 @@ env:
   # Java modules used by the application (jdeps) plus a few loaded by reflection; keeps the bundled runtime small.
   MODULES: java.base,java.desktop,java.prefs,java.sql,java.logging,java.xml,java.naming,java.scripting,java.management,jdk.unsupported,jdk.charsets,jdk.localedata,jdk.crypto.ec,jdk.zipfs,jdk.accessibility
   JLINK_OPTIONS: --strip-debug --no-man-pages --no-header-files --strip-native-commands --compress=zip-6
+  # files opened by a double click: Digital circuits, Quartus block diagrams and projects
+  ASSOCIATIONS: --file-associations packaging/associations/dig.properties --file-associations packaging/associations/bdf.properties --file-associations packaging/associations/qpf.properties
 
 jobs:
   jar:
@@ -96,7 +98,7 @@ jobs:
             --icon packaging/icons/icon.icns --vendor QuartusMACOpenSource \
             --description "Digital logic simulator compatible with Quartus files" \
             --mac-package-identifier org.quartusmacopensource.digital --mac-package-name "$APP_NAME" \
-            --dest dist
+            $ASSOCIATIONS --dest dist
           mkdir out
           mv dist/*.dmg "out/${APP_NAME}-${VERSION}-macOS-arm64.dmg"
 
@@ -110,7 +112,7 @@ jobs:
                   --description "Digital logic simulator compatible with Quartus files")
           mkdir out
           jpackage --type msi "${COMMON[@]}" --win-menu --win-menu-group "$APP_NAME" --win-shortcut \
-            --win-dir-chooser --win-per-user-install --win-upgrade-uuid 6f0b2c64-5d43-4a52-9a52-1f1d7c0a5e31 --dest dist
+            --win-dir-chooser --win-per-user-install --win-upgrade-uuid 6f0b2c64-5d43-4a52-9a52-1f1d7c0a5e31 $ASSOCIATIONS --dest dist
           mv dist/*.msi "out/${APP_NAME}-${VERSION}-Windows-x64.msi"
           jpackage --type app-image "${COMMON[@]}" --dest image
           (cd image && 7z a -tzip "../out/${APP_NAME}-${VERSION}-Windows-x64-portable.zip" "$APP_NAME" > /dev/null)
@@ -127,7 +129,7 @@ jobs:
           mkdir out
           jpackage --type deb "${COMMON[@]}" --linux-package-name digitalquartus --linux-shortcut \
             --linux-menu-group Education --linux-app-category education \
-            --linux-deb-maintainer noreply@github.com --dest dist
+            --linux-deb-maintainer noreply@github.com $ASSOCIATIONS --dest dist
           mv dist/*.deb "out/${APP_NAME}-${VERSION}-Linux-x64.deb"
           jpackage --type app-image "${COMMON[@]}" --dest image
           tar -C image -czf "out/${APP_NAME}-${VERSION}-Linux-x64.tar.gz" "$APP_NAME"

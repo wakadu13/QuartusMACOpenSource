@@ -21,6 +21,7 @@ public class Main extends Muxer {
         addCommand(new SVGExport());
         addCommand(new QuartusImport());
         addCommand(new QuartusExport());
+        addCommand(new QuartusCheck());
         addCommand(new StatsExport());
         addCommand(new Runner());
     }

@@ -56,7 +56,9 @@ import de.neemann.digital.hdl.vhdl2.VHDLGenerator;
 import de.neemann.digital.lang.Lang;
 import de.neemann.digital.quartus.BdfExporter;
 import de.neemann.digital.quartus.Board;
+import de.neemann.digital.quartus.Lab;
 import de.neemann.digital.quartus.QuartusImporter;
+import de.neemann.digital.quartus.gui.QuartusMenu;
 import de.neemann.digital.testing.TestingDataException;
 import de.neemann.digital.toolchain.Configuration;
 import de.neemann.digital.undo.ChangedListener;
@@ -97,6 +99,9 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
     private static final String KEY_START_STOP_ACTION = "startStop";
     private static boolean experimental;
+    // the window opened at start-up and the files the system asked to open before it was shown
+    private static Main firstMain;
+    private static final List<File> PENDING_OPEN = new ArrayList<>();
 
     /**
      * @return true if experimental features are enabled
@@ -241,6 +246,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         createStartMenu(menuBar, toolBar);
 
         createAnalyseMenu(menuBar);
+        menuBar.add(QuartusMenu.create(this));
 
         toolBar.addSeparator();
 
@@ -1789,7 +1795,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
 
             ensureModelIsStopped();
             windowPosManager.closeAll();
-            statusLabel.setText(" ");
+            statusLabel.setText(Lab.of(circuit) != null ? Lang.get("msg_labOpened") : " ");
         } catch (Exception e) {
             circuitComponent.setCircuit(new Circuit());
             setFilename(null, false);
@@ -2277,6 +2283,8 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             setMacCopyPasteTo(UIManager.get("TextArea.focusInputMap"));
         }
 
+        installOpenFileHandler();
+
         File file = null;
         for (String s : args) {
             if (s.equals("experimental")) experimental = true;
@@ -2313,6 +2321,10 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                     }
                 }
                 main.setVisible(true);
+                firstMain = main;
+                for (File f : PENDING_OPEN)
+                    openFromSystem(f);
+                PENDING_OPEN.clear();
 
                 if (tutorial) {
                     LOGGER.debug("open tutorial dialog");
@@ -2322,6 +2334,44 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 CheckForNewRelease.showReleaseDialog(main);
             });
         }
+    }
+
+    /**
+     * On macOS a file opened by a double click in the Finder is not given as an argument but sent as an event.
+     */
+    private static void installOpenFileHandler() {
+        if (!Desktop.isDesktopSupported())
+            return;
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.APP_OPEN_FILE))
+            return;
+        desktop.setOpenFileHandler(e -> SwingUtilities.invokeLater(() -> {
+            for (File f : e.getFiles())
+                openFromSystem(f.getAbsoluteFile());
+        }));
+    }
+
+    /**
+     * Opens a file the operating system asked to open: in the start-up window if it is still empty,
+     * otherwise in a new window.
+     *
+     * @param file the file to open
+     */
+    private static void openFromSystem(File file) {
+        if (firstMain == null) {
+            PENDING_OPEN.add(file);
+            return;
+        }
+        String name = file.getName();
+        if (name.endsWith(".fsm"))
+            FSMFrame.openFile(file);
+        else if (name.endsWith(".tru"))
+            TableDialog.openFile(file);
+        else if (firstMain.isDisplayable() && firstMain.filename == null && !firstMain.isStateChanged()
+                && firstMain.circuitComponent.getCircuit().getElements().isEmpty())
+            firstMain.loadFile(file, true, true);
+        else
+            new MainBuilder().setFileToOpen(file).build().setVisible(true);
     }
 
     private static void setMacCopyPasteTo(Object obj) {

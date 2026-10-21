@@ -714,6 +714,12 @@ public final class Keys {
             new Key<>("pinNumber", "").setSecondary();
 
     /**
+     * the hidden tests of a lab, see de.neemann.digital.quartus.Lab
+     */
+    public static final Key<String> LAB_DATA =
+            new Key<>("labData", "").setSecondary();
+
+    /**
      * the pin count
      */
     public static final Key<Integer> PINCOUNT =

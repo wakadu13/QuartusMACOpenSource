@@ -76,6 +76,8 @@ public class TestLang extends TestCase {
         File sources = getSourceFiles();
         HashSet<String> keys = new HashSet<>();
         parseTree(sources, keys);
+        // the Quartus layer is written in Kotlin
+        parseTree(new File(sources, "../kotlin"), keys);
         // check also test code. Is needed because documentation generation uses language key also.
         parseTree(new File(Resources.getRoot(), "../java"), keys);
 
@@ -263,7 +265,7 @@ public class TestLang extends TestCase {
                     parseTree(f, keys);
                 if (f.isFile()) {
                     try {
-                        if (f.getName().endsWith(".java"))
+                        if (f.getName().endsWith(".java") || f.getName().endsWith(".kt"))
                             checkSourceFile(f, keys, PATTERN);
                         if (f.getName().endsWith(".tem") || f.getName().endsWith(".v"))
                             checkSourceFile(f, keys, TEM_PATTERN);

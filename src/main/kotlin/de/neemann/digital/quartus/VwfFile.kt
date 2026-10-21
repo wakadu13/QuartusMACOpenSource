@@ -60,6 +60,10 @@ class VwfFile private constructor() {
     var timeUnit = "ns"
         private set
 
+    /** the grid size, null if not given */
+    var gridPeriod: Double? = null
+        private set
+
     companion object {
         /** the maximum number of rows created */
         const val MAX_ROWS = 5000
@@ -82,6 +86,7 @@ class VwfFile private constructor() {
                         when (k) {
                             "DATA_DURATION" -> vwf.duration = v.toDoubleOrNull() ?: 0.0
                             "TIME_UNIT" -> vwf.timeUnit = v
+                            "GRID_PERIOD" -> vwf.gridPeriod = v.toDoubleOrNull()
                         }
                     }
                     "SIGNAL" -> {
@@ -102,6 +107,9 @@ class VwfFile private constructor() {
                         t.expect("{")
                         while (t.peek() != "}") readNode(t, s.levels)
                         t.expect("}")
+                    }
+                    ";" -> {
+                        // the file ends with a semicolon
                     }
                     else -> if (t.peek() == "(") {
                         t.paren()

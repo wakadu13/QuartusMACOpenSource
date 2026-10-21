@@ -5,6 +5,7 @@
  */
 package de.neemann.gui;
 
+import de.neemann.digital.gui.release.ReleaseInfo;
 import de.neemann.digital.lang.Lang;
 
 import javax.swing.*;
@@ -19,7 +20,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.jar.JarFile;
-import java.util.prefs.Preferences;
 
 /**
  * Helper to show the info dialog!
@@ -114,11 +114,12 @@ public final class InfoDialog implements Iterable<InfoDialog.Manifest> {
                 Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
                 if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
                     try {
-                        String name = Preferences.userRoot().node("dig").get("newname", "Digital");
+                        // the links of the messages point to this project, not to the original Digital
                         URL url = hyperlinkEvent.getURL();
                         url = new URL(url.toString()
                                 .replace("[[version]]", revision)
-                                .replace("[[name]]", name));
+                                .replace("hneemann/[[name]]", ReleaseInfo.GITHUB_PROJECT)
+                                .replace("[[name]]", "QuartusMACOpenSource"));
                         desktop.browse(url.toURI());
                     } catch (IOException | URISyntaxException e) {
                         e.printStackTrace();
