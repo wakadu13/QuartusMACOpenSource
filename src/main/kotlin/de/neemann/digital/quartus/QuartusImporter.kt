@@ -36,7 +36,8 @@ import javax.swing.filechooser.FileNameExtensionFilter
  * Every design unit (block design file, VHDL entity, Verilog module, ...) is converted
  * to a Digital circuit stored in the output folder. Block design files are converted to
  * schematics which look like the Quartus schematics. VHDL and Verilog designs are simulated
- * by GHDL or Icarus Verilog, wrappers of megafunctions created by the MegaWizard plug-in
+ * by GHDL or Icarus Verilog, or by the built-in simulators [VhdlInterpreter] and [VerilogInterpreter]
+ * if these are not installed. Wrappers of megafunctions created by the MegaWizard plug-in
  * manager are simulated natively. Waveform files (vwf) are converted to test cases.
  *
  * @param project the project
@@ -462,9 +463,11 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
             c.attributes.set(Keys.DESCRIPTION, "Megafunction ${mf.uppercase()} imported from ${entity.file?.name}\n$params")
         } else {
             ifc = DesignInterface(entity.name, DesignInterface.Kind.HDL, ports)
-            c = wrapperCircuit(ifc, Inner.Hdl(entity))
+            val codeFile = hdlCodeFile(entity)
+            c = wrapperCircuit(ifc, Inner.Hdl(entity, codeFile))
             c.attributes.set(Keys.DESCRIPTION, "Simulated by " +
-                (if (entity.language == HdlEntity.Language.VHDL) "GHDL" else "Icarus Verilog") + ": " + entity.file?.absolutePath)
+                (if (entity.language == HdlEntity.Language.VHDL) "GHDL" else "Icarus Verilog") +
+                " or, if it is not installed, by the built-in simulator: " + codeFile?.absolutePath)
         }
         setSymbolShape(c, ifc, symbol)
         save(c, ifc)
@@ -478,7 +481,60 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
     private sealed class Inner {
         class Part(val part: QuartusPart, val params: Params, val portMap: Map<String, String>,
                    val slices: Map<String, IntRange> = emptyMap()) : Inner()
-        class Hdl(val entity: HdlEntity) : Inner()
+        class Hdl(val entity: HdlEntity, val codeFile: File?) : Inner()
+    }
+
+    /*
+     * The file with the code of the HDL entity. If the entity uses entities, modules or packages
+     * declared in other files of the project, a file containing all of them is created next to the
+     * circuits, so that GHDL, Icarus Verilog or the built-in simulators find them.
+     */
+    private fun hdlCodeFile(e: HdlEntity): File? {
+        val f = e.file?.absoluteFile ?: return null
+        val vhdl = e.language == HdlEntity.Language.VHDL
+        fun isVhdl(x: File) = x.name.lowercase().let { it.endsWith(".vhd") || it.endsWith(".vhdl") }
+        fun read(x: File) = try {
+            String(x.readBytes(), Charsets.ISO_8859_1)
+        } catch (ex: IOException) {
+            ""
+        }
+        fun strip(t: String) = if (vhdl) t.replace(Regex("--[^\n]*"), " ")
+        else t.replace(Regex("(?s)/\\*.*?\\*/"), " ").replace(Regex("//[^\n]*"), " ")
+        val unitRegex = if (vhdl) Regex("""(?i)\b(?:entity|package)\s+(\w+)\s+is\b""") else Regex("""\bmodule\s+(\w+)""")
+        // only the files of the project, not the files of other projects in neighbouring folders
+        val dirs = (listOf(f.parentFile, project.projectDir) + project.searchPaths).map { it.absoluteFile }.toSet()
+        val candidates = ArrayList<File>(project.designFiles)
+        for (d in dirs) d.listFiles()?.sortedBy { it.name }?.let { candidates.addAll(it) }
+        val files = candidates.map { it.absoluteFile }.distinct().filter { it.isFile && isHdl(it) && isVhdl(it) == vhdl }
+        val texts = HashMap<File, String>()
+        val declared = HashMap<File, Set<String>>()
+        val units = LinkedHashMap<String, File>()
+        fun unitsOf(t: String) = unitRegex.findAll(t).map { m -> m.groupValues[1].let { if (vhdl) it.lowercase() else it } }
+            .filter { it != "body" }.toSet()
+        for (x in files) {
+            val t = strip(read(x))
+            texts[x] = t
+            declared[x] = unitsOf(t)
+            for (u in declared[x]!!) units.putIfAbsent(u, x)
+        }
+        val order = ArrayList<File>()
+        val visited = HashSet<File>()
+        fun visit(x: File) {
+            if (!visited.add(x)) return
+            val t = texts.getOrPut(x) { strip(read(x)) }
+            val own = declared.getOrPut(x) { unitsOf(t) }
+            for ((u, uf) in units)
+                if (uf != x && u !in own && Regex("\\b${Regex.escape(u)}\\b", if (vhdl) setOf(RegexOption.IGNORE_CASE) else emptySet()).containsMatchIn(t))
+                    visit(uf)
+            // the used units are declared first
+            order.add(x)
+        }
+        visit(f)
+        if (order.size == 1) return f
+        val out = File(outDir, e.name + if (vhdl) "_all.vhd" else "_all.v")
+        out.writeBytes(order.joinToString("\n") { read(it) }.toByteArray(Charsets.ISO_8859_1))
+        if (out !in createdFiles) createdFiles.add(out)
+        return out
     }
 
     /*
@@ -511,7 +567,7 @@ class QuartusImporter(val project: QuartusProject, private val outDir: File) {
                         innerKey[it.label] = (if (p.direction == BdfFile.Direction.OUTPUT) ShapeBuilder.OUT else ShapeBuilder.IN) + p.name
                     }
                     attr.set(Keys.LABEL, e.name).set(Keys.EXTERNAL_INPUTS, spec(false)).set(Keys.EXTERNAL_OUTPUTS, spec(true))
-                        .set(Keys.EXTERNAL_CODE_FILE, e.file?.absoluteFile)
+                        .set(Keys.EXTERNAL_CODE_FILE, inner.codeFile)
                         .set(Keys.APPLICATION_TYPE, if (e.language == HdlEntity.Language.VHDL) Application.Type.GHDL else Application.Type.IVERILOG)
                     symbol = SymbolFactory.block(e.name,
                         e.ports.filter { it.direction != BdfFile.Direction.OUTPUT }.map { SymbolFactory.Port(it.name, it.name, it.bits > 1) },

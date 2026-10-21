@@ -21,6 +21,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -130,6 +131,130 @@ public class QuartusImportTest extends TestCase {
             assertEquals(v, count.getValue());
             assertEquals(v == 9 ? 1 : 0, carry.getValue());
             assertEquals(v == 9 ? 1 : 0, hi.getValue());
+        }
+        m.close();
+    }
+
+    private static void write(File dir, String name, String text) throws IOException {
+        Files.write(new File(dir, name).toPath(), text.getBytes(StandardCharsets.ISO_8859_1));
+    }
+
+    public void testVerilogProject() throws Exception {
+        // the top level module instantiates a module of another file, simulated by Icarus Verilog or the built-in simulator
+        File dir = tempDir();
+        write(dir, "vproj.qsf", "set_global_assignment -name TOP_LEVEL_ENTITY top\n"
+                + "set_global_assignment -name VERILOG_FILE top.v\n"
+                + "set_global_assignment -name VERILOG_FILE cnt.v\n");
+        write(dir, "top.v", "module top(input clk, input rst_n, output [3:0] q, output tick);\n"
+                + "  counter #(.MAX(9)) u0 (.clk(clk), .rst_n(rst_n), .q(q));\n"
+                + "  assign tick = (q == 4'd9);\n"
+                + "endmodule\n");
+        write(dir, "cnt.v", "// a counter with an asynchronous reset\n"
+                + "module counter #(parameter MAX = 15) (input clk, rst_n, output reg [3:0] q);\n"
+                + "  always @(posedge clk or negedge rst_n)\n"
+                + "    if (!rst_n) q <= 4'd0;\n"
+                + "    else if (q == MAX) q <= 4'd0;\n"
+                + "    else q <= q + 4'd1;\n"
+                + "endmodule\n");
+        QuartusImporter imp = QuartusImporter.importFile(new File(dir, "vproj.qsf"), new File(dir, "digital"));
+        assertEquals(imp.getWarnings().toString(), 0, imp.getWarnings().size());
+
+        Model m = createModel(imp.getTopFile());
+        ObservableValue clk = input(m, "clk");
+        ObservableValue rst = input(m, "rst_n");
+        ObservableValue q = output(m, "q");
+        ObservableValue tick = output(m, "tick");
+        rst.setValue(0);
+        m.doStep();
+        assertEquals(0, q.getValue());
+        rst.setValue(1);
+        m.doStep();
+        for (int i = 1; i <= 25; i++) {
+            clock(m, clk);
+            assertEquals(i % 10, q.getValue());
+            assertEquals(i % 10 == 9 ? 1 : 0, tick.getValue());
+        }
+        m.close();
+    }
+
+    public void testVhdlProject() throws Exception {
+        // a package, an entity using an enumeration type and generics, a top level entity with component instances
+        File labs = tempDir();
+        // another project in a neighbouring folder declares an entity with the same name, it must not be used
+        File other = new File(labs, "lab1");
+        assertTrue(other.mkdirs());
+        write(other, "blink.vhd", "library ieee; use ieee.std_logic_1164.all;\n"
+                + "entity blink is port (clk, rst : in std_logic; led : out std_logic); end blink;\n"
+                + "architecture wrong of blink is begin led <= '1'; end wrong;\n");
+        File dir = new File(labs, "lab2");
+        assertTrue(dir.mkdirs());
+        write(dir, "vhdlproj.qsf", "set_global_assignment -name TOP_LEVEL_ENTITY vtop\n"
+                + "set_global_assignment -name VHDL_FILE defs.vhd\n"
+                + "set_global_assignment -name VHDL_FILE blink.vhd\n"
+                + "set_global_assignment -name VHDL_FILE vtop.vhd\n");
+        write(dir, "defs.vhd", "library ieee; use ieee.std_logic_1164.all;\n"
+                + "package defs is\n"
+                + "  constant LIMIT : integer := 3;\n"
+                + "  type mode_t is (OFF, ON_STATE);\n"
+                + "end package defs;\n");
+        write(dir, "blink.vhd", "library ieee; use ieee.std_logic_1164.all;\n"
+                + "use work.defs.all;\n"
+                + "entity blink is\n"
+                + "  generic (N : integer := LIMIT);\n"
+                + "  port (clk, rst : in std_logic; led : out std_logic);\n"
+                + "end blink;\n"
+                + "architecture rtl of blink is\n"
+                + "  signal mode : mode_t := OFF;\n"
+                + "  signal cnt : integer range 0 to 15 := 0;\n"
+                + "begin\n"
+                + "  process (clk, rst)\n"
+                + "  begin\n"
+                + "    if rst = '1' then\n"
+                + "      mode <= OFF;\n"
+                + "      cnt <= 0;\n"
+                + "    elsif rising_edge(clk) then\n"
+                + "      if cnt = N - 1 then\n"
+                + "        cnt <= 0;\n"
+                + "        case mode is\n"
+                + "          when OFF => mode <= ON_STATE;\n"
+                + "          when ON_STATE => mode <= OFF;\n"
+                + "        end case;\n"
+                + "      else\n"
+                + "        cnt <= cnt + 1;\n"
+                + "      end if;\n"
+                + "    end if;\n"
+                + "  end process;\n"
+                + "  led <= '1' when mode = ON_STATE else '0';\n"
+                + "end rtl;\n");
+        write(dir, "vtop.vhd", "library ieee; use ieee.std_logic_1164.all;\n"
+                + "entity vtop is\n"
+                + "  port (clk, rst : in std_logic; led : out std_logic_vector(1 downto 0));\n"
+                + "end vtop;\n"
+                + "architecture s of vtop is\n"
+                + "  component blink\n"
+                + "    generic (N : integer := 3);\n"
+                + "    port (clk, rst : in std_logic; led : out std_logic);\n"
+                + "  end component;\n"
+                + "begin\n"
+                + "  b0 : blink port map (clk => clk, rst => rst, led => led(0));\n"
+                + "  b1 : blink generic map (N => 2) port map (clk, rst, led(1));\n"
+                + "end s;\n");
+        QuartusImporter imp = QuartusImporter.importFile(new File(dir, "vhdlproj.qsf"), new File(dir, "digital"));
+        assertEquals(imp.getWarnings().toString(), 0, imp.getWarnings().size());
+
+        Model m = createModel(imp.getTopFile());
+        ObservableValue clk = input(m, "clk");
+        ObservableValue rst = input(m, "rst");
+        ObservableValue led = output(m, "led");
+        rst.setValue(1);
+        m.doStep();
+        rst.setValue(0);
+        m.doStep();
+        assertEquals(0, led.getValue());
+        for (int i = 1; i <= 24; i++) {
+            clock(m, clk);
+            long expected = ((i / 3) % 2) | (((i / 2) % 2) << 1);
+            assertEquals("clock " + i, expected, led.getValue());
         }
         m.close();
     }

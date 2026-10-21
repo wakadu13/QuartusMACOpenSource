@@ -11,6 +11,7 @@ import de.neemann.digital.core.extern.handler.ProcessInterface;
 import de.neemann.digital.core.extern.handler.StdIOInterface;
 import de.neemann.digital.gui.Settings;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.quartus.VerilogInterpreter;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,9 +46,8 @@ public class ApplicationIVerilog extends ApplicationVerilogStdIO {
     public ProcessInterface start(String label, String code, PortDefinition inputs, PortDefinition outputs, File root) throws IOException {
         File file = null;
 
-        if (!hasIverilog) {
-            throw new IOException(Lang.get("err_iverilogNotInstalled"));
-        }
+        if (!hasIverilog)
+            return startBuiltIn(label, code, inputs, outputs);
 
         try {
             String ivlModuleDir = iverilogFolder + File.separator + "lib" + File.separator + "ivl";
@@ -69,10 +69,19 @@ public class ApplicationIVerilog extends ApplicationVerilogStdIO {
             if (file != null)
                 ProcessStarter.removeFolder(file.getParentFile());
             if (iverilogNotFound(e))
-                throw new IOException(Lang.get("err_iverilogNotInstalled"));
+                return startBuiltIn(label, code, inputs, outputs);
             else
                 throw e;
         }
+    }
+
+    /*
+     * Without Icarus Verilog the built-in Verilog simulator is used if it supports the code.
+     */
+    private static ProcessInterface startBuiltIn(String label, String code, PortDefinition inputs, PortDefinition outputs) throws IOException {
+        if (VerilogInterpreter.check(label, code) == null)
+            return VerilogInterpreter.start(label, code, inputs, outputs);
+        throw new IOException(Lang.get("err_iverilogNotInstalled"));
     }
 
     private boolean iverilogNotFound(Throwable e) {
