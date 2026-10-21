@@ -66,9 +66,10 @@ public class ApplicationGHDL extends ApplicationVHDLStdIO {
                 ProcessStarter.removeFolder(file.getParentFile());
             if (ghdlNotFound(e)) {
                 // without GHDL the built-in VHDL simulator is used if it supports the code
-                if (VhdlInterpreter.check(label, code) == null)
+                String reason = VhdlInterpreter.check(label, code);
+                if (reason == null)
                     return VhdlInterpreter.start(label, code, inputs, outputs);
-                throw new IOException(Lang.get("err_ghdlNotInstalled"));
+                throw new IOException(Lang.get("err_ghdlNotInstalled") + "\n" + Lang.get("err_builtInNotSupported_N", reason));
             } else
                 throw e;
         }

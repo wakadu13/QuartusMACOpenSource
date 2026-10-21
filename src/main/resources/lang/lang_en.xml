@@ -3075,4 +3075,5 @@ Give this file to the students.</string>
     <string name="msg_labExpectedFound_NNN">{0}: expected {1}, found {2}</string>
     <string name="menu_guide">Guide: the Quartus booklet step by step</string>
     <string name="menu_guide_tt">Shows how to do the steps of the booklet "Simulation sous Quartus" in this application, with an animation for every step.</string>
+    <string name="err_builtInNotSupported_N">The built-in simulator does not support this code: {0}</string>
 </resources>

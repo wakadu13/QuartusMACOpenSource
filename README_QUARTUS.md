@@ -47,7 +47,7 @@ java -cp Digital.jar CLI quartusExport -dig MonCircuit.dig [-bdf MonCircuit.bdf]
 | `.mif`, `.hex` | contenu des mémoires | lus pour `LPM_FILE` / `INIT_FILE` (`LPM_ROM`, `LPM_RAM_DQ`, `ALTSYNCRAM`) ; écrits lors de l'export des ROM |
 | `.vwf` | chronogramme (*Vector Waveform File*) | converti en **cas de test** Digital (voir plus bas) |
 | `.vhd`, `.vhdl` | VHDL | entité simulée par **GHDL** si installé, sinon par le **simulateur VHDL intégré** (voir plus bas) ; les enveloppes MegaWizard de mégafonctions supportées sont simulées nativement |
-| `.v`, `.sv` | Verilog | module simulé par **Icarus Verilog** ; mégafonctions comme ci-dessus |
+| `.v`, `.sv` | Verilog | module simulé par **Icarus Verilog** si installé, sinon par le **simulateur Verilog intégré** ; mégafonctions comme ci-dessus |
 | `.tdf` | AHDL | enveloppes MegaWizard (`lpm_counter`, `lpm_decode`, `lpm_mux`…) simulées nativement ; pour les autres fichiers AHDL, seule l'interface (`SUBDESIGN`) est lue et le bloc est importé vide |
 | `.qws`, `.gdf`, `.sym` | espace de travail, anciens formats MAX+plus II | ignorés |
 
@@ -57,15 +57,29 @@ sous-dossiers, les `SEARCH_PATH`/`USER_LIBRARIES`, les dossiers voisins du proje
 rangé dans `projets/MonProjet`). Un bloc dont la source est introuvable est importé comme **bloc vide** (sorties à 0) en
 gardant son dessin, pour que le schéma reste complet.
 
-## Simulateur VHDL intégré
+## Simulateurs VHDL et Verilog intégrés
 
-Sans GHDL (cas habituel sur macOS), les fichiers VHDL sont simulés par un petit simulateur intégré. Il gère le
-VHDL synthétisable des bibliothèques de cours et les fichiers VHDL que Quartus génère à partir d'un schéma :
-signaux `std_logic`, `std_logic_vector`, `unsigned`, `signed`, `integer`, affectations concurrentes et
-conditionnelles (`when … else`, `with … select`), processus avec liste de sensibilité ou `WAIT UNTIL`, `IF`,
-`CASE`, variables, `rising_edge`/`falling_edge`/`'EVENT`, opérateurs logiques, relationnels et arithmétiques.
-Il ne gère pas les instanciations de composants, les boucles, les types énumérés ni les fonctions : un tel
-fichier nécessite GHDL. Les valeurs indéfinies (`'U'`, `'X'`, `'Z'`) valent `'0'`.
+Sans GHDL ni Icarus Verilog (cas habituel sur macOS), les fichiers VHDL et Verilog sont simulés par des simulateurs
+intégrés, qui couvrent le code synthétisable des cours et les fichiers que Quartus génère à partir d'un schéma.
+
+**VHDL** : `std_logic`/`std_logic_vector`, `unsigned`, `signed`, `bit`, `boolean`, `integer`/`natural` avec
+intervalles, **types énumérés** (machines à états), sous-types, tableaux à une dimension (ROM, bancs de registres),
+`generic` (valeurs par défaut et `generic map`), constantes, alias, **packages et fonctions** dans le même code,
+affectations concurrentes, `when … else`, `with … select`, processus (liste de sensibilité, `process(all)`,
+`WAIT UNTIL`), `IF`, `CASE`, boucles `for`/`while` avec `exit`/`next`, agrégats (`(others => '0')`…), attributs
+(`'length`, `'range`, `'high`…), décalages, fonctions de `numeric_std`/`std_logic_arith` (`to_unsigned`, `resize`,
+`conv_integer`, `shift_left`…), **instances de composants ou d'entités** et `for/if generate` (mis à plat).
+
+**Verilog** : ports ANSI ou non, `parameter`/`localparam` et `#(...)`, `wire`/`reg`/`integer`, mémoires,
+`assign`, portes primitives, `always @(posedge …)`/`@(*)`, affectations bloquantes et non bloquantes (ordonnancement
+Verilog), `if`, `case`/`casez`/`casex`, boucles, fonctions, tous les opérateurs avec les règles de largeur et de signe,
+`` `define``/`` `ifdef``, instances de modules et `generate`.
+
+Quand un fichier utilise des entités, modules ou packages d'autres fichiers du projet, l'import les réunit dans un
+fichier `<entité>_all.vhd` (ou `_all.v`) à côté des circuits. Non pris en charge : enregistrements (`record`),
+tableaux à plusieurs dimensions, procédures, tâches Verilog, `$readmemh`, `` `include``, vecteurs de plus de
+64 bits ; les valeurs `'X'`/`'Z'` valent `'0'` (pas de trois-états). Le message d'erreur indique alors la construction
+en cause, et GHDL ou Icarus Verilog reste utilisable (chemins dans *Settings*).
 
 ## Ce qui est converti
 
@@ -164,6 +178,29 @@ diminuer temporairement les facteurs de division ou utiliser des cas de test.
 Le résultat est vérifié par aller-retour (export puis réimport) sur les exemples de Digital : les cas de test
 d'origine passent pour tous les circuits n'utilisant pas d'élément sans équivalent.
 
+## Outils du menu Quartus
+
+- **Éditeur de chronogrammes** (équivalent du *Waveform Editor* et du *Simulator Tool*) : on dessine les entrées
+  à la souris (clic, glisser, `Maj`+glisser pour un intervalle ; *Horloge…*, *Compteur…*, *Valeur…*), on règle la
+  durée (*End Time*) et la grille (*Grid Size*), et les sorties sont recalculées à chaque modification, en simulation
+  **fonctionnelle** ou **temporelle** (délai par porte, qui montre retards et impulsions parasites). Les chronogrammes
+  s'enregistrent en `.vwf` lisible par Quartus ; *Copier comme test* les transforme en données d'un élément *Test*.
+- **Pin Planner** : la carte DE0 est dessinée ; on choisit une entrée ou une sortie puis on clique sur
+  l'interrupteur, le bouton, la LED ou le segment (ou on y glisse le signal). Un bus est placé à partir du bit 0 sur
+  les ressources suivantes. Les broches sont écrites dans les numéros de broche des entrées/sorties (annulable) ;
+  *Afficher sur la carte DE0* ouvre la carte virtuelle.
+- **TP auto-corrigés** : l'enseignant dessine la solution avec un élément *Test*, puis *Créer un TP à partir de ce
+  circuit* écrit une copie pour les étudiants, où les tests sont cachés (masqués, pas chiffrés) et la solution
+  éventuellement retirée. L'étudiant vérifie son circuit avec *Vérifier mon TP* : note et, si l'enseignant l'a
+  permis, première ligne fausse (« S : attendu 0, obtenu 1 »).
+- **Vérifier un dossier de projets Quartus** : importe et simule tous les `.qpf`/`.bdf` d'un dossier (par exemple
+  les projets des étudiants) dans un dossier temporaire et liste les blocs manquants, les erreurs et les tests en
+  échec ; le rapport s'enregistre en Markdown. En ligne de commande :
+  `java -cp Digital.jar CLI quartusCheck -dir dossier -report rapport.md` (code de sortie 1 en cas d'erreur).
+  Le workflow GitHub `CI` le lance sur `projets` et `bibliotheque-EA` à chaque push.
+- **Guide : le livret Quartus pas à pas** (aussi dans *Aide*) : les étapes du livret avec une animation pour chacune.
+  Les animations sont enregistrées par `GuideRecorder` (tests) et assemblées par `outils/guide/make_gifs.py`.
+
 ## Apparence « Quartus »
 
 Le réglage **Edit → Settings → Quartus look** (activé par défaut) dessine aussi les entrées, sorties et
@@ -175,10 +212,11 @@ portes ANSI/IEEE. Les circuits importés gardent toujours le dessin d'origine de
 - L'AHDL (`.tdf`) écrit à la main, les anciens schémas MAX+plus II (`.gdf`) et les symboles binaires `.sym` ne sont pas simulés.
 - Si le symbole d'un bloc est plus ancien que le bloc (un port ajouté depuis), le port manquant est ajouté
   sous le symbole, non connecté, avec un avertissement.
-- La simulation des blocs VHDL/Verilog nécessite GHDL ou Icarus Verilog (chemins dans *Settings*), et les
+- Le code VHDL/Verilog hors du sous-ensemble décrit plus haut nécessite GHDL ou Icarus Verilog, et les
   bibliothèques Altera (`altera_mf`, `lpm`) ne sont pas fournies : seules les mégafonctions listées plus
   haut sont simulées sans elles.
-- La simulation est fonctionnelle (sans temps de propagation) ; `ALTPLL` ne multiplie pas la fréquence.
+- La simulation temporelle de l'éditeur de chronogrammes donne le même délai à chaque porte (pas de
+  temps réels du FPGA) ; `ALTPLL` ne multiplie pas la fréquence.
 - Les broches bidirectionnelles sont traitées comme des entrées.
 - Les noms de ports des macrofonctions 74xx suivent la bibliothèque `maxplus2` de Quartus ; un symbole dont
   les ports diffèrent est importé comme sous-bloc.
@@ -191,7 +229,10 @@ Le code Kotlin se trouve dans `src/main/kotlin/de/neemann/digital/quartus` :
 - `QuartusProject` : `.qpf`, `.qsf`, `.qip` ; `HdlEntity` : interface des entités VHDL/modules Verilog ;
 - `BdfConverter` : conversion d'un schéma (réseaux, bus, étiquettes) ; `QuartusImporter` : projet complet ;
 - `MemoryFile` : `.mif`/`.hex` ; `VwfFile` : chronogrammes → cas de test ; `BdfExporter` : export `.bdf` ;
-- `Board` : brochage des cartes (DE0) et création du circuit « carte » ;
+- `Board` : brochage des cartes (DE0) et création du circuit « carte » ; `PinPlanner` : affectation des broches ;
+- `VhdlInterpreter`, `VerilogInterpreter` : simulateurs HDL intégrés ;
+- `Waveform` : chronogrammes, simulation fonctionnelle et temporelle ; `Lab` : TP à tests cachés ;
+  `ProjectChecker` : vérification d'un dossier de projets ; `gui/` : fenêtres du menu Quartus et guide ;
 - `ShapeBuilder`, `SymbolFactory`, `QSymbol` et `draw/shapes/QuartusShape` (Java) : rendu à la Quartus ;
 - `lib/` : `QuartusParts` (catalogue), `Primitives`, `Megafunctions`, `Macrofunctions` (modèles de simulation),
   `QuartusNode` (nœud de simulation générique), `Params`.

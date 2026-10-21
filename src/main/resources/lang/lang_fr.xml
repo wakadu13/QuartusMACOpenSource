@@ -3218,4 +3218,5 @@ Donnez ce fichier aux étudiants.</string>
     <string name="msg_labExpectedFound_NNN">{0} : attendu {1}, obtenu {2}</string>
     <string name="menu_guide">Guide : le livret Quartus pas à pas</string>
     <string name="menu_guide_tt">Montre comment faire dans l'application les étapes du livret « Simulation sous Quartus », avec une animation pour chaque étape.</string>
+    <string name="err_builtInNotSupported_N">Le simulateur intégré ne prend pas en charge ce code : {0}</string>
 </resources>

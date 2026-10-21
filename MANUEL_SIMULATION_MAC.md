@@ -1,5 +1,8 @@
 # Suivre le manuel « Simulation sous Quartus » sur Mac
 
+> Ce guide existe aussi dans l'application, avec une animation par étape : **Aide → Guide : le livret Quartus pas à
+> pas**. Le circuit `ouex` du livret est dans [`projets/ouex`](projets/ouex/ouex.dig).
+
 Ce guide reprend, étape par étape, le livret étudiant *Apprentissage par problèmes — Électronique numérique*
 (§ 14 à 17 : simulation sous Quartus, assignation des entrées-sorties, programmation de la DE0) et indique comment
 faire la même chose dans QuartusMACOpenSource, sans Quartus. L'exemple est celui du livret : un circuit `ouex`
@@ -24,12 +27,20 @@ Ouvrir un projet ou un fichier Quartus**), ou, dans un projet déjà importé, l
 
 ### Simulator Tool, mode Functional, Generate Functional Simulation Netlist
 
-Inutile aussi : la simulation de l'application est toujours **fonctionnelle** (sans temps de propagation), comme le
-mode *Functional* de Quartus, et le circuit est préparé automatiquement à chaque lancement.
+Inutile aussi : le circuit est préparé automatiquement à chaque lancement. La simulation est **fonctionnelle**
+(sans temps de propagation), comme le mode *Functional* de Quartus ; l'éditeur de chronogrammes propose aussi un
+mode **temporel** qui donne un délai à chaque porte.
 
 ### § 15.1 — Créer les signaux d'entrée (fichier `.vwf`)
 
-Trois façons de faire, au choix :
+Quatre façons de faire, au choix :
+
+0. **L'éditeur de chronogrammes**, le plus proche de Quartus : **Quartus → Éditeur de chronogrammes**. Les entrées
+   `E1`, `E2` et la sortie `S` sont listées ; on dessine les entrées à la souris (clic, glisser, `Maj`+glisser pour un
+   intervalle, boutons *Horloge…*, *Compteur…*, *Valeur…*), on règle **Durée (End Time)** et **Grille (Grid Size)**
+   — par exemple `10 ms` et `0.5 ms`, avec `E1` horloge d'une demi-période d'un pas (1 ms) et `E2` de deux pas
+   (2 ms) — et `S` est recalculée à chaque modification. **Enregistrer…** écrit un fichier `.vwf` que Quartus
+   ouvre aussi.
 
 1. **Commander les entrées à la main** : lancez la simulation (▶) et cliquez sur les entrées `E1`, `E2` ; la
    sortie `S` s'affiche aussitôt. C'est le plus rapide pour vérifier une table de vérité.
@@ -57,8 +68,8 @@ Trois façons de faire, au choix :
    **Simulation → Exécuter les tests** (F11) indique les lignes fausses et affiche le chronogramme.
    Un fichier `.vwf` venant de Quartus est d'ailleurs converti automatiquement en test à l'import.
 
-« End Time » et « Grid Size » n'ont pas d'équivalent à régler : la simulation dure tant qu'on ne l'arrête pas, et
-le graphique enregistre chaque changement.
+« End Time » et « Grid Size » se règlent dans l'éditeur de chronogrammes ; avec les autres méthodes, la simulation
+dure tant qu'on ne l'arrête pas, et le graphique enregistre chaque changement.
 
 ### § 15.2 — Lancer la simulation et voir les résultats
 
@@ -71,7 +82,9 @@ Le livret relie `E1` à l'interrupteur SW0 (`J6`), `E2` à SW1 (`H5`) et `S` à 
 
 - Pour un projet Quartus qui a déjà ses affectations (dans le `.qsf`), rien à faire : elles sont lues à l'import
   et affichées à côté des broches (cadres `PIN_xx`).
-- Pour un circuit dessiné dans l'application : dans les propriétés de chaque entrée/sortie, remplissez
+- Pour un circuit dessiné dans l'application, le plus simple est **Quartus → Pin Planner** : la carte DE0 est
+  dessinée, on choisit `E1` dans la liste puis on clique sur **SW0**, de même `E2` sur **SW1** et `S` sur **LEDG0**.
+- On peut aussi, dans les propriétés de chaque entrée/sortie, remplir
   **Numéro de broche** (`J6`, `H5`, `J1`, avec ou sans `PIN_`). Pour un bus, donnez les broches séparées par des
   virgules, bit 0 en premier. Le fichier `bibliotheque-EA/PinPlaner.xls` donne toutes les broches de la carte.
 
@@ -92,3 +105,9 @@ l'école. Pour y arriver avec ce qui a été fait sur le Mac :
 
 Un projet déjà compilé contient son `.sof` (par exemple `projets/C_3_jk/C_3_jk.sof`), qu'on peut programmer
 directement.
+
+## TP auto-corrigés
+
+Un TP donné par l'enseignant (fichier `.dig` créé avec **Quartus → Créer un TP à partir de ce circuit**) contient des
+tests cachés. On dessine le circuit puis **Quartus → Vérifier mon TP** affiche la note et, si l'enseignant l'a permis,
+la première ligne fausse, par exemple `E1=1 E2=1 → S : attendu 0, obtenu 1`.

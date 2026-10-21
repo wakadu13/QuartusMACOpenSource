@@ -24,6 +24,12 @@ En bref :
   `LPM_RAM_DQ`, `ALTSYNCRAM`, `LPM_FIFO`…) et 73 macrofonctions `74xx`, rangés comme dans Quartus.
 - Les mémoires sont initialisées par les fichiers `.mif`/`.hex`, les chronogrammes `.vwf` deviennent des cas de test.
 - **Fichier → Exporter → Exporter vers Quartus (bdf)** écrit un circuit Digital en schéma Quartus.
+- Menu **Quartus** : **éditeur de chronogrammes** (`.vwf`, simulation fonctionnelle ou temporelle), **Pin Planner**
+  graphique de la carte DE0, **TP auto-corrigés** (tests cachés, « Vérifier mon TP ») et **vérification d'un dossier**
+  de projets (aussi en ligne de commande : `CLI quartusCheck`).
+- VHDL et Verilog sont simulés **sans GHDL ni Icarus Verilog** par des simulateurs intégrés (machines à états,
+  generics/paramètres, instances, `generate`…).
+- **Aide → Guide : le livret Quartus pas à pas**, avec une animation par étape.
 - En ligne de commande : `java -cp Digital.jar CLI quartus -file MonProjet.qpf` (import) et
   `java -cp Digital.jar CLI quartusExport -dig MonCircuit.dig` (export).
 - La couche Quartus est écrite en Kotlin ; il faut Java 17 ou plus récent.

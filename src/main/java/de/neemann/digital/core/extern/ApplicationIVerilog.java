@@ -79,9 +79,10 @@ public class ApplicationIVerilog extends ApplicationVerilogStdIO {
      * Without Icarus Verilog the built-in Verilog simulator is used if it supports the code.
      */
     private static ProcessInterface startBuiltIn(String label, String code, PortDefinition inputs, PortDefinition outputs) throws IOException {
-        if (VerilogInterpreter.check(label, code) == null)
+        String reason = VerilogInterpreter.check(label, code);
+        if (reason == null)
             return VerilogInterpreter.start(label, code, inputs, outputs);
-        throw new IOException(Lang.get("err_iverilogNotInstalled"));
+        throw new IOException(Lang.get("err_iverilogNotInstalled") + "\n" + Lang.get("err_builtInNotSupported_N", reason));
     }
 
     private boolean iverilogNotFound(Throwable e) {

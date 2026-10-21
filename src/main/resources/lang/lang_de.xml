@@ -3119,4 +3119,5 @@ gespeichert. Diese Datei an die Studierenden geben.</string>
     <string name="msg_labExpectedFound_NNN">{0}: erwartet {1}, gefunden {2}</string>
     <string name="menu_guide">Anleitung: das Quartus Heft Schritt für Schritt</string>
     <string name="menu_guide_tt">Zeigt, wie die Schritte des Hefts "Simulation sous Quartus" in dieser Anwendung ausgeführt werden, mit einer Animation für jeden Schritt.</string>
+    <string name="err_builtInNotSupported_N">Der eingebaute Simulator unterstützt diesen Code nicht: {0}</string>
 </resources>
