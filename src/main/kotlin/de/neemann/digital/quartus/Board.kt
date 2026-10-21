@@ -294,32 +294,33 @@ internal class BoardCircuitBuilder(private val board: Board, private val outDir:
         }
 
         // LEDs, switches and buttons: a row each
-        fun row(title: String, count: Int, prefix: String, create: (Int, Vector, String) -> Unit) {
+        fun row(title: String, count: Int, prefix: String, spacing: Int, create: (Int, Vector, String) -> Unit) {
             if ((0 until count).none { byKey.containsKey("$prefix$it") }) return
             circuit.add(text(title, Vector(origin.x, y)))
             y += SIZE * 3
             // the element with the highest number is the leftmost, as on the board
             for (i in count - 1 downTo 0) {
                 val name = byKey["$prefix$i"] ?: continue
-                create(i, Vector(origin.x + SIZE * 3 + (count - 1 - i) * SIZE * 5, y), name)
+                create(i, Vector(origin.x + SIZE * 3 + (count - 1 - i) * SIZE * spacing, y), name)
             }
             y += SIZE * 5
         }
-        row("LEDG", board.leds.size, "led") { i, pos, name ->
+        row("LEDG", board.leds.size, "led", 5) { i, pos, name ->
             val led = element("LED", pos)
             attr(led).set(Keys.LABEL, "LEDG$i").set(Keys.COLOR, Color.GREEN)
             circuit.add(led)
             circuit.wires.add(Wire(pos.add(0, SIZE * 2), pos))
             circuit.add(tunnel(name, pos.add(0, SIZE * 2), 3))
         }
-        row("SW", board.switches.size, "sw") { i, pos, name ->
+        // the switches and buttons are drawn with their label on the left, so they need more space
+        row("SW", board.switches.size, "sw", 7) { i, pos, name ->
             val sw = element(DipSwitch.DESCRIPTION.name, pos)
             attr(sw).set(Keys.LABEL, "SW$i")
             circuit.add(sw)
             circuit.wires.add(Wire(pos, pos.add(0, SIZE * 2)))
             circuit.add(tunnel(name, pos.add(0, SIZE * 2), 3))
         }
-        row("BUTTON", board.buttons.size, "key") { i, pos, name ->
+        row("BUTTON", board.buttons.size, "key", 7) { i, pos, name ->
             val bt = element(Button.DESCRIPTION.name, pos)
             attr(bt).set(Keys.LABEL, "BUTTON$i").set(Keys.ACTIVE_LOW, true)
             circuit.add(bt)

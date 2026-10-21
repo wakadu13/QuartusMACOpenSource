@@ -3215,4 +3215,7 @@ Donnez ce fichier aux étudiants.</string>
     <string name="msg_labAllPassed">Bravo, le circuit est juste !</string>
     <string name="msg_labHintRow">Première ligne fausse :</string>
     <string name="msg_labOpened">Ce circuit est un TP : vérifiez-le avec Quartus &gt; Vérifier mon TP.</string>
+    <string name="msg_labExpectedFound_NNN">{0} : attendu {1}, obtenu {2}</string>
+    <string name="menu_guide">Guide : le livret Quartus pas à pas</string>
+    <string name="menu_guide_tt">Montre comment faire dans l'application les étapes du livret « Simulation sous Quartus », avec une animation pour chaque étape.</string>
 </resources>

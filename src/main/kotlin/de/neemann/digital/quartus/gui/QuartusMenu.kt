@@ -10,6 +10,7 @@ import de.neemann.digital.lang.Lang
 import de.neemann.gui.ToolTipAction
 import java.awt.event.ActionEvent
 import javax.swing.JMenu
+import javax.swing.JMenuItem
 
 /**
  * The menu with the tools which replace the ones of Quartus: waveform editor, pin planner, labs and the
@@ -47,6 +48,19 @@ object QuartusMenu {
         menu.add(action(Lang.get("menu_checkProjects"), Lang.get("menu_checkProjects_tt")) {
             CheckProjectsDialog.chooseAndCheck(main, main.baseFileName?.parentFile)
         }.createJMenuItem())
+        menu.addSeparator()
+        menu.add(createGuideItem(main))
         return menu
     }
+
+    /**
+     * Creates the menu item which shows the guide.
+     *
+     * @param main the main window
+     * @return the menu item
+     */
+    @JvmStatic
+    fun createGuideItem(main: Main): JMenuItem = action(Lang.get("menu_guide"), Lang.get("menu_guide_tt")) {
+        GuideFrame.showGuide(main)
+    }.createJMenuItem()
 }

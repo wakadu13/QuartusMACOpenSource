@@ -269,6 +269,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                 }
             }
         }.setToolTip(Lang.get("menu_help_elements_tt")).createJMenuItem());
+        helpMenu.add(QuartusMenu.createGuideItem(this));
         new DocumentationLocator().addMenuTo(helpMenu);
         helpMenu.addSeparator();
         helpMenu.add(InfoDialog.getInstance().createMenuItem(this, MESSAGE));

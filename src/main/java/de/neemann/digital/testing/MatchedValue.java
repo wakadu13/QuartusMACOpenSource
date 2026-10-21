@@ -30,6 +30,13 @@ public class MatchedValue extends Value {
     }
 
     /**
+     * @return the expected value
+     */
+    public Value getExpected() {
+        return expected;
+    }
+
+    /**
      * @return true if test is passed
      */
     boolean isPassed() {

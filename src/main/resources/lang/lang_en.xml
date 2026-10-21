@@ -3072,4 +3072,7 @@ Give this file to the students.</string>
     <string name="msg_labAllPassed">Well done, the circuit is correct!</string>
     <string name="msg_labHintRow">First wrong row:</string>
     <string name="msg_labOpened">This circuit is a lab: check it with Quartus &gt; Check my lab.</string>
+    <string name="msg_labExpectedFound_NNN">{0}: expected {1}, found {2}</string>
+    <string name="menu_guide">Guide: the Quartus booklet step by step</string>
+    <string name="menu_guide_tt">Shows how to do the steps of the booklet "Simulation sous Quartus" in this application, with an animation for every step.</string>
 </resources>

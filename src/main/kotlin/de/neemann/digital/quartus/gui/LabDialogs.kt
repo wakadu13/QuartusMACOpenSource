@@ -134,6 +134,7 @@ object LabDialogs {
         sb.append("</ul></body></html>")
         val pane = JEditorPane("text/html", sb.toString())
         pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+        pane.font = UIManager.getFont("Label.font").deriveFont(15f)
         pane.isEditable = false
         val scroll = JScrollPane(pane)
         scroll.preferredSize = Dimension(560, minOf(500, 180 + results.size * 50))

@@ -3116,4 +3116,7 @@ gespeichert. Diese Datei an die Studierenden geben.</string>
     <string name="msg_labAllPassed">Sehr gut, die Schaltung ist richtig!</string>
     <string name="msg_labHintRow">Erste falsche Zeile:</string>
     <string name="msg_labOpened">Diese Schaltung ist eine Übung: mit Quartus &gt; Meine Übung prüfen kontrollieren.</string>
+    <string name="msg_labExpectedFound_NNN">{0}: erwartet {1}, gefunden {2}</string>
+    <string name="menu_guide">Anleitung: das Quartus Heft Schritt für Schritt</string>
+    <string name="menu_guide_tt">Zeigt, wie die Schritte des Hefts "Simulation sous Quartus" in dieser Anwendung ausgeführt werden, mit einer Animation für jeden Schritt.</string>
 </resources>

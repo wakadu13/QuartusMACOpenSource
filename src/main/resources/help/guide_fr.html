@@ -1,0 +1,91 @@
+<html>
+<head>
+<style>
+body { font-family: sans-serif; margin: 12px; }
+h1 { color: #1f4e79; }
+h2 { color: #1f4e79; margin-top: 22px; }
+.box { background-color: #eef4fb; padding: 8px; }
+.q { color: #666666; }
+</style>
+</head>
+<body>
+<h1>Le livret « Simulation sous Quartus » sur Mac</h1>
+<p>Ce guide reprend les étapes du livret (§ 14 à 17) et montre comment les faire dans l'application, sans Quartus.
+L'exemple est celui du livret : le circuit <b>ouex</b>, avec les entrées <b>E1</b>, <b>E2</b> et la sortie
+<b>S</b> = E1 ⊕ E2. Il se trouve dans le dossier <code>projets/ouex</code> du dépôt.</p>
+<p>
+<a href="#ouvrir">§ 14 Ouvrir un projet</a> &nbsp;·&nbsp;
+<a href="#chronogrammes">§ 15.1 Chronogrammes</a> &nbsp;·&nbsp;
+<a href="#simulation">§ 15.2 Simulation</a> &nbsp;·&nbsp;
+<a href="#pinplanner">§ 16 Pin Planner</a> &nbsp;·&nbsp;
+<a href="#export">§ 17 Programmer la carte</a> &nbsp;·&nbsp;
+<a href="#tp">TP auto-corrigés</a> &nbsp;·&nbsp;
+<a href="#enseignants">Enseignants</a>
+</p>
+
+<a name="ouvrir"></a>
+<h2>§ 14 — Ouvrir un projet (Analysis &amp; Synthesis)</h2>
+<p><b>Fichier → Ouvrir un projet ou un fichier Quartus</b> ouvre un <code>.qpf</code>, un <code>.bdf</code> ou un
+fichier VHDL/Verilog. Le schéma est converti (dossier <code>digital</code> à côté du projet) et les erreurs de câblage
+ou les blocs introuvables sont signalés à l'ouverture : c'est l'équivalent de <i>Analysis &amp; Synthesis</i>.
+Si le projet a des numéros de broches, il s'ouvre directement sur la carte DE0 virtuelle.</p>
+<p class="q">« Set as Top-Level Entity » : il suffit d'ouvrir le <code>.bdf</code> du bloc à simuler.</p>
+<p><img src="ouvrir.gif"></p>
+
+<a name="chronogrammes"></a>
+<h2>§ 15.1 — Créer les signaux d'entrée (fichier .vwf)</h2>
+<p><b>Quartus → Éditeur de chronogrammes</b> remplace le <i>Waveform Editor</i> et le <i>Simulator Tool</i> :</p>
+<ul>
+<li>cliquer sur une case d'une entrée change sa valeur, glisser dessine, <b>Maj</b>+glisser choisit un intervalle ;</li>
+<li><b>Horloge…</b>, <b>Compteur…</b>, <b>Valeur…</b>, <b>0</b>, <b>1</b>, <b>Inverser</b> s'appliquent à l'entrée choisie
+(comme <i>Overwrite Clock</i> et <i>Count Value</i>) ;</li>
+<li><b>Durée</b> et <b>Grille</b> correspondent à <i>End Time</i> et <i>Grid Size</i> (par exemple 10 ms et 0.5 ms) ;</li>
+<li>la sortie S est recalculée à chaque modification. Le mode <b>Fonctionnelle</b> est celui du livret ; le mode
+<b>Temporelle</b> ajoute un délai à chaque porte et montre les retards et les impulsions parasites ;</li>
+<li><b>Enregistrer…</b> écrit un fichier <code>.vwf</code> qui s'ouvre aussi dans Quartus.</li>
+</ul>
+<p><img src="chronogrammes.gif"></p>
+
+<a name="simulation"></a>
+<h2>§ 15.2 — Lancer la simulation</h2>
+<p><b>Simulation → Lancer la simulation</b> (ou ▶) : un clic sur une entrée change sa valeur et les sorties suivent
+aussitôt, les fils à 1 sont en vert clair. <b>Simulation → Exécuter les tests</b> (F11) vérifie la table de vérité de
+l'élément <i>Test</i>.</p>
+<p><img src="simulation.gif"></p>
+
+<a name="pinplanner"></a>
+<h2>§ 16 — Affecter les broches (Pin Planner)</h2>
+<p><b>Quartus → Pin Planner</b> montre la carte DE0 : choisir un signal dans la liste puis cliquer sur l'interrupteur,
+le bouton, la LED ou le segment voulu (ou y glisser le signal). Un bus est placé à partir du bit 0 sur les ressources
+suivantes. Comme dans le livret : <b>E1 → SW0</b> (J6), <b>E2 → SW1</b> (H5), <b>S → LEDG0</b> (J1).</p>
+<p><b>Afficher sur la carte DE0</b> ouvre la carte virtuelle : on manipule les interrupteurs et on voit la LED, comme
+sur la vraie carte.</p>
+<p><img src="pinplanner.gif"></p>
+
+<a name="export"></a>
+<h2>§ 17 — Programmer le FPGA de la carte DE0</h2>
+<p>La programmation demande Quartus et la carte en USB : elle se fait sur un PC de l'école.
+<b>Fichier → Exporter → Exporter vers Quartus (bdf)</b> écrit le schéma et, s'il n'existe pas, le projet Quartus
+(<code>.qpf</code>, <code>.qsf</code> pour la DE0 avec les broches). Sur le PC : ouvrir le <code>.qpf</code>, compiler,
+puis <i>Programmer</i> avec le fichier <code>.sof</code> (USB-Blaster, case <i>Program/Configure</i>).</p>
+<p><img src="export.gif"></p>
+
+<a name="tp"></a>
+<h2>TP auto-corrigés</h2>
+<p>Un TP donné par l'enseignant contient des tests cachés. Dessinez le circuit, puis <b>Quartus → Vérifier mon TP</b> :
+la note s'affiche, avec la première ligne fausse quand l'enseignant l'a permis.</p>
+<p><img src="tp.gif"></p>
+
+<a name="enseignants"></a>
+<h2>Pour les enseignants</h2>
+<div class="box">
+<p><b>Créer un TP</b> : dessinez la solution avec un élément <i>Test</i> (la table de vérité ou les chronogrammes ; dans
+l'éditeur de chronogrammes, <b>Copier comme test</b> les fournit), puis <b>Quartus → Créer un TP à partir de ce
+circuit</b>. La copie donnée aux étudiants garde les entrées et sorties, la solution peut être retirée et les tests
+sont cachés (masqués, pas chiffrés).</p>
+<p><b>Vérifier un dossier</b> : <b>Quartus → Vérifier un dossier de projets Quartus</b> importe et simule tous les
+projets d'un dossier, par exemple ceux des étudiants, et liste les blocs manquants, les erreurs et les tests qui
+échouent. En ligne de commande : <code>java -cp Digital.jar CLI quartusCheck -dir dossier -report rapport.md</code>.</p>
+</div>
+</body>
+</html>

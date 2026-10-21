@@ -1,0 +1,79 @@
+<html>
+<head>
+<style>
+body { font-family: sans-serif; margin: 12px; }
+h1 { color: #1f4e79; }
+h2 { color: #1f4e79; margin-top: 22px; }
+.box { background-color: #eef4fb; padding: 8px; }
+</style>
+</head>
+<body>
+<h1>The Quartus simulation booklet without Quartus</h1>
+<p>This guide follows the steps of the booklet "Simulation sous Quartus" (§ 14 to 17) and shows how to do them in
+this application. The example is the circuit <b>ouex</b> of the booklet: inputs <b>E1</b>, <b>E2</b> and output
+<b>S</b> = E1 xor E2, found in the folder <code>projets/ouex</code>. The animations show the French user interface.</p>
+<p>
+<a href="#open">§ 14 Open a project</a> &nbsp;·&nbsp;
+<a href="#waveforms">§ 15.1 Waveforms</a> &nbsp;·&nbsp;
+<a href="#simulation">§ 15.2 Simulation</a> &nbsp;·&nbsp;
+<a href="#pinplanner">§ 16 Pin Planner</a> &nbsp;·&nbsp;
+<a href="#export">§ 17 Program the board</a> &nbsp;·&nbsp;
+<a href="#labs">Labs</a> &nbsp;·&nbsp;
+<a href="#teachers">Teachers</a>
+</p>
+
+<a name="open"></a>
+<h2>§ 14 — Open a project (Analysis &amp; Synthesis)</h2>
+<p><b>File → Open Quartus project or file</b> opens a <code>.qpf</code>, a <code>.bdf</code> or a VHDL/Verilog file.
+The design is converted (folder <code>digital</code> next to the project) and wiring errors or missing blocks are
+reported, like <i>Analysis &amp; Synthesis</i>. A project with pin assignments opens on the virtual DE0 board.
+To simulate a part ("Set as Top-Level Entity"), simply open its <code>.bdf</code>.</p>
+<p><img src="ouvrir.gif"></p>
+
+<a name="waveforms"></a>
+<h2>§ 15.1 — Create the input signals (vwf file)</h2>
+<p><b>Quartus → Waveform editor</b> replaces the Waveform Editor and the Simulator Tool: click on a step of an input
+to change it, drag to draw, Shift+drag to select an interval. <b>Clock…</b>, <b>Count…</b>, <b>Value…</b>, <b>0</b>,
+<b>1</b> and <b>Invert</b> work on the selected input. <b>End time</b> and <b>Grid size</b> are those of Quartus.
+The outputs are simulated after every change, <b>Functional</b> like in the booklet or <b>Timing</b> with a delay per
+gate. <b>Save…</b> writes a <code>.vwf</code> file which Quartus can open.</p>
+<p><img src="chronogrammes.gif"></p>
+
+<a name="simulation"></a>
+<h2>§ 15.2 — Run the simulation</h2>
+<p><b>Simulation → Start of Simulation</b> (or ▶): click on an input to change it, the outputs follow immediately.
+<b>Simulation → Run Tests</b> (F11) checks the truth table of the <i>Test</i> element.</p>
+<p><img src="simulation.gif"></p>
+
+<a name="pinplanner"></a>
+<h2>§ 16 — Assign the pins (Pin Planner)</h2>
+<p><b>Quartus → Pin Planner</b> shows the DE0 board: select a signal, then click on a switch, button, LED or segment
+(or drag the signal onto it). As in the booklet: <b>E1 → SW0</b> (J6), <b>E2 → SW1</b> (H5), <b>S → LEDG0</b> (J1).
+<b>Show on the DE0 board</b> opens the virtual board.</p>
+<p><img src="pinplanner.gif"></p>
+
+<a name="export"></a>
+<h2>§ 17 — Program the FPGA of the DE0 board</h2>
+<p>Programming needs Quartus and the board on USB. <b>File → Export → Export to Quartus (bdf)</b> writes the design and,
+if missing, the Quartus project with the pin assignments. Then open the <code>.qpf</code> in Quartus, compile and
+program the <code>.sof</code> file.</p>
+<p><img src="export.gif"></p>
+
+<a name="labs"></a>
+<h2>Labs which grade themselves</h2>
+<p>A lab given by the teacher contains hidden tests. Draw the circuit, then <b>Quartus → Check my lab</b> shows the
+score and, if the teacher allowed it, the first wrong row.</p>
+<p><img src="tp.gif"></p>
+
+<a name="teachers"></a>
+<h2>For teachers</h2>
+<div class="box">
+<p><b>Create a lab</b>: draw the solution with a <i>Test</i> element (the waveform editor provides the test data with
+<b>Copy as test</b>), then <b>Quartus → Create a lab from this circuit</b>. The copy for the students keeps the inputs
+and outputs, the solution can be removed and the tests are hidden (not encrypted).</p>
+<p><b>Check a folder</b>: <b>Quartus → Check a folder of Quartus projects</b> imports and simulates every project of a
+folder and lists missing blocks, errors and failed tests. Command line:
+<code>java -cp Digital.jar CLI quartusCheck -dir folder -report report.md</code>.</p>
+</div>
+</body>
+</html>

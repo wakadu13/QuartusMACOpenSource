@@ -17,6 +17,8 @@ import de.neemann.digital.draw.library.ElementLibrary
 import de.neemann.digital.draw.model.ModelCreator
 import de.neemann.digital.draw.shapes.ShapeFactory
 import de.neemann.digital.gui.components.data.DummyElement
+import de.neemann.digital.lang.Lang
+import de.neemann.digital.testing.MatchedValue
 import de.neemann.digital.testing.TestCaseDescription
 import de.neemann.digital.testing.TestCaseElement
 import de.neemann.digital.testing.TestExecutor
@@ -89,7 +91,15 @@ class Lab(val title: String, val text: String, val hints: Boolean, val tests: Li
                 for (row in table) {
                     val values = row.values
                     if (values.any { it.state == Value.State.FAIL }) {
-                        hint = (0 until table.columns).joinToString("  ") { c -> table.getColumnName(c) + "=" + values[c] }
+                        // the inputs, then the wrong outputs with the expected and the found value
+                        val ins = (0 until table.columns).filter { values[it] !is MatchedValue }
+                            .joinToString("  ") { c -> table.getColumnName(c) + "=" + values[c] }
+                        val outs = (0 until table.columns).filter { values[it].state == Value.State.FAIL }
+                            .joinToString(", ") { c ->
+                                val m = values[c] as MatchedValue
+                                Lang.get("msg_labExpectedFound_NNN", table.getColumnName(c), m.expected, Value(m).toString())
+                            }
+                        hint = "$ins → $outs"
                         break
                     }
                 }
@@ -172,7 +182,7 @@ class Lab(val title: String, val text: String, val hints: Boolean, val tests: Li
             val lines = (lab.title + "\n" + lab.text).trim().lines().size
             val t = VisualElement(DummyElement.TEXTDESCRIPTION.name)
             t.elementAttributes.set(Keys.DESCRIPTION, (lab.title + "\n\n" + lab.text).trim())
-            t.setPos(Vector(minX, minY - 40 - lines * 20)).setShapeFactory(shapeFactory)
+            t.setPos(Vector(minX - 60, minY - 80 - lines * 40)).setShapeFactory(shapeFactory)
             c.add(t)
             c.attributes.set(Keys.LAB_DATA, lab.encode())
             return c
